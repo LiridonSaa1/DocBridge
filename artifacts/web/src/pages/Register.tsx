@@ -135,7 +135,7 @@ export default function Register() {
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-6">
             <span className="text-white font-bold text-xl">SH</span>
           </div>
-          <h2 className="text-3xl font-bold mb-3">Bashkohuni me ShërbimePro</h2>
+          <h2 className="font-serif text-3xl font-bold mb-3">Bashkohuni me ShërbimePro</h2>
           <p className="text-white/70 leading-relaxed">
             Krijoni llogarinë tuaj si klient, noter ose përkthyes dhe nisni të përfitoni nga platforma jonë profesionale.
           </p>
@@ -167,7 +167,7 @@ export default function Register() {
             <span className="font-bold text-lg">Shërbime<span className="text-primary">Pro</span></span>
           </div>
 
-          <h1 className="text-2xl font-bold text-foreground mb-2">Regjistrohu</h1>
+          <h1 className="font-serif text-2xl font-bold text-foreground mb-2">Regjistrohu</h1>
           <p className="text-muted-foreground mb-6">Zgjidhni llojin e llogarisë</p>
 
           {/* Role selector */}

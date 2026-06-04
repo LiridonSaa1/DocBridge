@@ -40,7 +40,7 @@ export default function NotaryDetail({ params }: { params: { id: string } }) {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <h1 className="text-2xl font-bold text-foreground">{notary.fullName}</h1>
+                      <h1 className="font-serif text-2xl font-bold text-foreground">{notary.fullName}</h1>
                       <p className="text-muted-foreground">{notary.businessName}</p>
                     </div>
                     <Badge className="bg-green-100 text-green-700 border-green-200">Aprovuar</Badge>
@@ -51,7 +51,7 @@ export default function NotaryDetail({ params }: { params: { id: string } }) {
 
             {/* Details */}
             <div className="bg-card border border-border rounded-xl p-6 mb-5">
-              <h2 className="font-semibold text-foreground mb-4">Informacioni i kontaktit</h2>
+              <h2 className="font-serif font-semibold text-foreground mb-4">Informacioni i kontaktit</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InfoRow icon={MapPin} label="Qyteti" value={notary.city} />
                 {notary.address && <InfoRow icon={MapPin} label="Adresa" value={notary.address} />}

@@ -32,7 +32,7 @@ export default function Notaries() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
               <Badge className="mb-3 bg-primary/20 text-primary border-primary/30">Shërbime Noteriale</Badge>
-              <h1 className="text-3xl font-bold mb-2">Noterë të Aprovuar</h1>
+              <h1 className="font-serif text-3xl font-bold mb-2">Noterë të Aprovuar</h1>
               <p className="text-secondary-foreground/70">Gjeni noterin më të afërt dhe të certifikuar</p>
             </motion.div>
           </div>

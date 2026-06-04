@@ -56,7 +56,7 @@ export default function Dashboard() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Paneli im</h1>
+              <h1 className="font-serif text-2xl font-bold text-foreground">Paneli im</h1>
               <p className="text-muted-foreground text-sm mt-1">Mirë se vini në llogarinë tuaj</p>
             </div>
             <Badge className={`${statusConfig["active"].color} border-0 gap-1.5 px-3 py-1.5`}>

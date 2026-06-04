@@ -54,7 +54,7 @@ export default function Login() {
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-6">
             <span className="text-white font-bold text-xl">SH</span>
           </div>
-          <h2 className="text-3xl font-bold mb-4">Mirë se ktheheni</h2>
+          <h2 className="font-serif text-3xl font-bold mb-4">Mirë se ktheheni</h2>
           <p className="text-white/70 text-lg leading-relaxed">
             Hyni në llogarinë tuaj dhe aksesoni shërbimet profesionale shqiptare.
           </p>
@@ -83,7 +83,7 @@ export default function Login() {
             <span className="font-bold text-lg">Shërbime<span className="text-primary">Pro</span></span>
           </div>
 
-          <h1 className="text-2xl font-bold text-foreground mb-2">Hyrje</h1>
+          <h1 className="font-serif text-2xl font-bold text-foreground mb-2">Hyrje</h1>
           <p className="text-muted-foreground mb-8">Shkruani kredencialet tuaja</p>
 
           <Form {...form}>

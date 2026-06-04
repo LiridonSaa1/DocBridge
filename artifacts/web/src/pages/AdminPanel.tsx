@@ -215,7 +215,7 @@ function AdsTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold text-foreground">Menaxhimi i Reklamave</h2>
+        <h2 className="font-serif text-lg font-semibold text-foreground">Menaxhimi i Reklamave</h2>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-1.5" data-testid="button-create-ad">
@@ -410,7 +410,7 @@ export default function AdminPanel() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
               <Badge className="mb-3 bg-primary/20 text-primary border-primary/30">Administrim</Badge>
-              <h1 className="text-2xl font-bold">Paneli i Administratorit</h1>
+              <h1 className="font-serif text-2xl font-bold">Paneli i Administratorit</h1>
               <p className="text-secondary-foreground/70 text-sm mt-1">Menaxhoni platformen, reklamat dhe aprovimin e profesionistëve</p>
             </motion.div>
           </div>
