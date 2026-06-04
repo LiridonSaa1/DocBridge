@@ -3,13 +3,26 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Professional Services Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: ads
+    description: Advertisement/carousel management
+  - name: notaries
+    description: Notary services
+  - name: translators
+    description: Translation services
+  - name: courses
+    description: Course listings
+  - name: users
+    description: User profiles
+  - name: admin
+    description: Admin operations
+
 paths:
   /healthz:
     get:
@@ -24,6 +37,445 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /ads:
+    get:
+      operationId: listAds
+      tags: [ads]
+      summary: List all active ads
+      responses:
+        "200":
+          description: List of ads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ad"
+    post:
+      operationId: createAd
+      tags: [ads]
+      summary: Create a new ad (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ad"
+
+  /ads/{id}:
+    get:
+      operationId: getAd
+      tags: [ads]
+      summary: Get a single ad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ad found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ad"
+    patch:
+      operationId: updateAd
+      tags: [ads]
+      summary: Update an ad (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ad"
+    delete:
+      operationId: deleteAd
+      tags: [ads]
+      summary: Delete an ad (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /notaries:
+    get:
+      operationId: listNotaries
+      tags: [notaries]
+      summary: List all approved notaries
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of notaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notary"
+    post:
+      operationId: createNotary
+      tags: [notaries]
+      summary: Register as notary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotaryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notary"
+
+  /notaries/{id}:
+    get:
+      operationId: getNotary
+      tags: [notaries]
+      summary: Get notary profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notary found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notary"
+    patch:
+      operationId: updateNotary
+      tags: [notaries]
+      summary: Update notary profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotaryUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notary"
+
+  /translators:
+    get:
+      operationId: listTranslators
+      tags: [translators]
+      summary: List all approved translators
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of translators
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Translator"
+    post:
+      operationId: createTranslator
+      tags: [translators]
+      summary: Register as translator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TranslatorInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Translator"
+
+  /translators/{id}:
+    get:
+      operationId: getTranslator
+      tags: [translators]
+      summary: Get translator profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Translator found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Translator"
+    patch:
+      operationId: updateTranslator
+      tags: [translators]
+      summary: Update translator profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TranslatorUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Translator"
+
+  /courses:
+    get:
+      operationId: listCourses
+      tags: [courses]
+      summary: List all active courses
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+    post:
+      operationId: createCourse
+      tags: [courses]
+      summary: Create a new course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /courses/{id}:
+    get:
+      operationId: getCourse
+      tags: [courses]
+      summary: Get course details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Course found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user profile by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get platform statistics (admin only)
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/pending:
+    get:
+      operationId: listPendingApprovals
+      tags: [admin]
+      summary: List pending registrations awaiting approval
+      responses:
+        "200":
+          description: Pending registrations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PendingList"
+
+  /admin/approve/{userId}:
+    post:
+      operationId: approveUser
+      tags: [admin]
+      summary: Approve a pending notary/translator registration
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /admin/reject/{userId}:
+    post:
+      operationId: rejectUser
+      tags: [admin]
+      summary: Reject a pending notary/translator registration
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +486,342 @@ components:
       required:
         - status
 
+    Ad:
+      type: object
+      required: [id, title, description, imageUrl, linkUrl, businessType, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        linkUrl:
+          type: string
+        businessType:
+          type: string
+          enum: [notary, translator, course, other]
+        isActive:
+          type: boolean
+        order:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    AdInput:
+      type: object
+      required: [title, description, imageUrl, linkUrl, businessType]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        linkUrl:
+          type: string
+        businessType:
+          type: string
+          enum: [notary, translator, course, other]
+        isActive:
+          type: boolean
+        order:
+          type: integer
+
+    AdUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        linkUrl:
+          type: string
+        businessType:
+          type: string
+          enum: [notary, translator, course, other]
+        isActive:
+          type: boolean
+        order:
+          type: integer
+
+    Notary:
+      type: object
+      required: [id, userId, fullName, businessName, businessNumber, city, phone, email, status, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        fullName:
+          type: string
+        businessName:
+          type: string
+        businessNumber:
+          type: string
+        city:
+          type: string
+        address:
+          type: ["string", "null"]
+        phone:
+          type: string
+        email:
+          type: string
+        certificationNumber:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        createdAt:
+          type: string
+
+    NotaryInput:
+      type: object
+      required: [fullName, businessName, businessNumber, city, phone, email]
+      properties:
+        fullName:
+          type: string
+        businessName:
+          type: string
+        businessNumber:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        certificationNumber:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+
+    NotaryUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        businessName:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+
+    Translator:
+      type: object
+      required: [id, userId, fullName, languages, city, phone, email, status, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        fullName:
+          type: string
+        businessName:
+          type: ["string", "null"]
+        languages:
+          type: array
+          items:
+            type: string
+        city:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        diplomaInfo:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        createdAt:
+          type: string
+
+    TranslatorInput:
+      type: object
+      required: [fullName, languages, city, phone, email]
+      properties:
+        fullName:
+          type: string
+        businessName:
+          type: string
+        languages:
+          type: array
+          items:
+            type: string
+        city:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        diplomaInfo:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+
+    TranslatorUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        businessName:
+          type: string
+        languages:
+          type: array
+          items:
+            type: string
+        city:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+
+    Course:
+      type: object
+      required: [id, title, description, provider, city, price, duration, category, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        provider:
+          type: string
+        city:
+          type: string
+        price:
+          type: number
+        duration:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+        contactEmail:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    CourseInput:
+      type: object
+      required: [title, description, provider, city, price, duration, category]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        provider:
+          type: string
+        city:
+          type: string
+        price:
+          type: number
+        duration:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+        contactPhone:
+          type: string
+        contactEmail:
+          type: string
+
+    UserProfile:
+      type: object
+      required: [id, email, role, createdAt]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [customer, notary, translator, admin]
+        fullName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, pending, suspended]
+        createdAt:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        avatarUrl:
+          type: string
+
+    AdminStats:
+      type: object
+      required: [totalUsers, totalNotaries, totalTranslators, totalCourses, totalAds, pendingApprovals]
+      properties:
+        totalUsers:
+          type: integer
+        totalNotaries:
+          type: integer
+        totalTranslators:
+          type: integer
+        totalCourses:
+          type: integer
+        totalAds:
+          type: integer
+        pendingApprovals:
+          type: integer
+        recentRegistrations:
+          type: integer
+
+    PendingList:
+      type: object
+      required: [notaries, translators]
+      properties:
+        notaries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notary"
+        translators:
+          type: array
+          items:
+            $ref: "#/components/schemas/Translator"
