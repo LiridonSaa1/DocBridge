@@ -69,58 +69,58 @@
   --elevate-2: rgba(0,0,0, .08);
 
   /* Albanian Professional Theme */
-  --background: 0 0% 98%;
-  --foreground: 0 0% 9%;
-  
-  --border: 0 0% 88%;
-  --input: 0 0% 88%;
-  --ring: 352 82% 43%;
+  --background: 30 20% 97%;
+  --foreground: 220 20% 8%;
+
+  --border: 220 13% 89%;
+  --input: 220 13% 89%;
+  --ring: 352 80% 42%;
 
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 9%;
-  --card-border: 0 0% 92%;
+  --card-foreground: 220 20% 8%;
+  --card-border: 220 13% 92%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 9%;
-  --popover-border: 0 0% 92%;
+  --popover-foreground: 220 20% 8%;
+  --popover-border: 220 13% 92%;
 
-  /* Albanian Red */
-  --primary: 352 82% 43%;
+  /* Albanian Red — deep, rich */
+  --primary: 352 80% 42%;
   --primary-foreground: 0 0% 100%;
 
-  /* Deep Black/Grey */
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 98%;
+  /* Very dark navy/charcoal for hero */
+  --secondary: 220 25% 10%;
+  --secondary-foreground: 0 0% 97%;
 
-  --muted: 0 0% 93%;
-  --muted-foreground: 0 0% 45%;
+  --muted: 220 14% 93%;
+  --muted-foreground: 220 9% 46%;
 
-  --accent: 0 0% 93%;
-  --accent-foreground: 0 0% 9%;
+  --accent: 220 14% 93%;
+  --accent-foreground: 220 20% 8%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --sidebar: 0 0% 98%;
-  --sidebar-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 88%;
-  --sidebar-primary: 352 82% 43%;
+  --sidebar: 30 20% 97%;
+  --sidebar-foreground: 220 20% 8%;
+  --sidebar-border: 220 13% 89%;
+  --sidebar-primary: 352 80% 42%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 93%;
-  --sidebar-accent-foreground: 0 0% 9%;
-  --sidebar-ring: 352 82% 43%;
+  --sidebar-accent: 220 14% 93%;
+  --sidebar-accent-foreground: 220 20% 8%;
+  --sidebar-ring: 352 80% 42%;
 
-  --chart-1: 352 82% 43%;
-  --chart-2: 0 0% 15%;
-  --chart-3: 0 0% 45%;
-  --chart-4: 0 0% 80%;
-  --chart-5: 0 0% 10%;
+  --chart-1: 352 80% 42%;
+  --chart-2: 220 25% 10%;
+  --chart-3: 220 9% 46%;
+  --chart-4: 220 14% 80%;
+  --chart-5: 220 20% 8%;
 
   --app-font-sans: 'Inter', system-ui, sans-serif;
-  --app-font-serif: Georgia, serif;
+  --app-font-serif: 'Playfair Display', Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  
-  --radius: 0.25rem;
+
+  --radius: 0.6rem;
 }
 
 .dark {
@@ -131,49 +131,49 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 0 0% 5%;
-  --foreground: 0 0% 98%;
+  --background: 220 20% 5%;
+  --foreground: 0 0% 97%;
 
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 352 82% 43%;
+  --border: 220 15% 18%;
+  --input: 220 15% 18%;
+  --ring: 352 80% 42%;
 
-  --card: 0 0% 8%;
-  --card-foreground: 0 0% 98%;
-  --card-border: 0 0% 15%;
+  --card: 220 20% 8%;
+  --card-foreground: 0 0% 97%;
+  --card-border: 220 15% 14%;
 
-  --popover: 0 0% 8%;
-  --popover-foreground: 0 0% 98%;
-  --popover-border: 0 0% 15%;
+  --popover: 220 20% 8%;
+  --popover-foreground: 0 0% 97%;
+  --popover-border: 220 15% 14%;
 
-  --primary: 352 82% 43%;
+  --primary: 352 80% 48%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 98%;
+  --secondary: 220 20% 16%;
+  --secondary-foreground: 0 0% 97%;
 
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 65%;
+  --muted: 220 15% 15%;
+  --muted-foreground: 220 9% 60%;
 
-  --accent: 0 0% 15%;
-  --accent-foreground: 0 0% 98%;
+  --accent: 220 15% 15%;
+  --accent-foreground: 0 0% 97%;
 
   --destructive: 0 62% 30%;
-  --destructive-foreground: 0 0% 98%;
+  --destructive-foreground: 0 0% 97%;
 
-  --sidebar: 0 0% 8%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-border: 0 0% 15%;
-  --sidebar-primary: 352 82% 43%;
+  --sidebar: 220 20% 8%;
+  --sidebar-foreground: 0 0% 97%;
+  --sidebar-border: 220 15% 14%;
+  --sidebar-primary: 352 80% 48%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 15%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-ring: 352 82% 43%;
+  --sidebar-accent: 220 15% 15%;
+  --sidebar-accent-foreground: 0 0% 97%;
+  --sidebar-ring: 352 80% 48%;
 
-  --chart-1: 352 82% 43%;
-  --chart-2: 0 0% 30%;
-  --chart-3: 0 0% 50%;
-  --chart-4: 0 0% 70%;
+  --chart-1: 352 80% 48%;
+  --chart-2: 220 20% 30%;
+  --chart-3: 220 9% 50%;
+  --chart-4: 220 14% 70%;
   --chart-5: 0 0% 90%;
 }
 
@@ -184,4 +184,53 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+  h1, h2, h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+  }
+}
+
+/* Premium button styles */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+           bg-primary text-primary-foreground shadow-lg
+           hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]
+           transition-all duration-200;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+           border-2 border-white/30 text-white
+           hover:bg-white/10 hover:border-white/50 active:scale-[0.98]
+           transition-all duration-200;
+    font-family: 'Inter', sans-serif;
+  }
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/8;
+  }
+  .section-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    @apply text-3xl font-bold text-foreground;
+  }
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent;
+  }
+}
+
+/* Shimmer animation for skeleton */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Subtle noise texture overlay */
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.4;
 }
