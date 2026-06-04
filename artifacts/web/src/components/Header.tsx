@@ -32,17 +32,23 @@ export default function Header() {
         : "bg-white border-b border-border"
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group" data-testid="link-logo">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/30 group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-sm tracking-tight">SH</span>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-serif font-bold text-lg text-foreground tracking-tight">Shërbime<span className="text-primary">Pro</span></span>
-              <span className="text-[10px] text-muted-foreground font-sans tracking-widest uppercase">Profesional</span>
-            </div>
+          <Link href="/" className="flex items-center group" data-testid="link-logo">
+            <div
+              className="group-hover:scale-105 transition-transform duration-200"
+              style={{
+                width: 190,
+                height: 80,
+                backgroundImage: "url('/logo.png')",
+                backgroundSize: "280px auto",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "-45px -82px",
+              }}
+              role="img"
+              aria-label="DocBridge"
+            />
           </Link>
 
           {/* Desktop Nav */}

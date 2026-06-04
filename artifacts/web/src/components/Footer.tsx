@@ -8,14 +8,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}
           <div>
-            <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
-                <span className="text-white font-bold text-sm">SH</span>
-              </div>
-              <div>
-                <span className="font-serif font-bold text-lg text-white">Shërbime<span className="text-primary">Pro</span></span>
-                <div className="text-[10px] text-white/40 tracking-widest uppercase">Profesional</div>
-              </div>
+            <Link href="/" className="inline-flex items-center mb-4 group">
+              <img
+                src="/logo.png"
+                alt="DocBridge"
+                className="h-12 w-auto object-contain brightness-0 invert group-hover:scale-105 transition-transform duration-200"
+              />
             </Link>
             <p className="text-sm leading-relaxed max-w-xs text-white/50">
               Platforma kryesore shqiptare për gjetjen e noterëve dhe pérkthyesve të certifikuar.
