@@ -5,13 +5,12 @@ import {
   useGetAdminStats, getGetAdminStatsQueryKey,
   useListAds, getListAdsQueryKey,
   useCreateAd, useUpdateAd, useDeleteAd,
-  useListPendingApprovals, getListPendingApprovalsQueryKey,
-  useApproveUser, useRejectUser,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,8 +24,10 @@ import { z } from "zod";
 import {
   LayoutDashboard, Image, Users2, CheckCircle, XCircle,
   Loader2, Plus, Trash2, Pencil, BarChart3,
-  FileText, Languages, MonitorPlay,
+  FileText, Languages, ShieldCheck, AlertCircle, MessageSquare,
+  Eye, ClipboardList, Activity, ChevronRight, Info, CheckCircle2, Clock,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 // ─── Ad Form ─────────────────────────────────────────────────────────────────
 const adSchema = z.object({
@@ -52,10 +53,7 @@ function AdFormModal({ defaultValues, adId, onClose }: { defaultValues?: Partial
 
   const form = useForm<AdForm>({
     resolver: zodResolver(adSchema),
-    defaultValues: {
-      title: "", description: "", imageUrl: "", linkUrl: "", businessType: "other", isActive: true,
-      ...defaultValues,
-    },
+    defaultValues: { title: "", description: "", imageUrl: "", linkUrl: "", businessType: "other", isActive: true, ...defaultValues },
   });
 
   const onSubmit = async (values: AdForm) => {
@@ -78,363 +76,659 @@ function AdFormModal({ defaultValues, adId, onClose }: { defaultValues?: Partial
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField control={form.control} name="title" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Titulli</FormLabel>
-            <FormControl><Input placeholder="Titulli i reklamës" data-testid="input-ad-title" {...field} /></FormControl>
-            <FormMessage />
-          </FormItem>
+          <FormItem><FormLabel>Titulli</FormLabel><FormControl><Input placeholder="Titulli i reklamës" {...field} /></FormControl><FormMessage /></FormItem>
         )} />
         <FormField control={form.control} name="description" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Pershkrimi</FormLabel>
-            <FormControl><Input placeholder="Pershkrim i shkurtër" data-testid="input-ad-description" {...field} /></FormControl>
-            <FormMessage />
-          </FormItem>
+          <FormItem><FormLabel>Pershkrimi</FormLabel><FormControl><Input placeholder="Pershkrim i shkurtër" {...field} /></FormControl><FormMessage /></FormItem>
         )} />
         <div className="grid grid-cols-2 gap-3">
           <FormField control={form.control} name="imageUrl" render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL Imazhi (opcional)</FormLabel>
-              <FormControl><Input placeholder="https://..." data-testid="input-ad-imageurl" {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
+            <FormItem><FormLabel>URL Imazhi</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField control={form.control} name="linkUrl" render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL Lidhja</FormLabel>
-              <FormControl><Input placeholder="https://..." data-testid="input-ad-linkurl" {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
+            <FormItem><FormLabel>URL Lidhja</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
           )} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <FormField control={form.control} name="businessType" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lloji</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger data-testid="select-ad-type">
-                    <SelectValue placeholder="Zgjidhni llojin" />
-                  </SelectTrigger>
-                </FormControl>
+            <FormItem><FormLabel>Kategoria</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                 <SelectContent>
-                  <SelectItem value="notary">Noter</SelectItem>
-                  <SelectItem value="translator">Pérkthyes</SelectItem>
-                  <SelectItem value="course">Kurs</SelectItem>
-                  <SelectItem value="other">Tjetër</SelectItem>
+                  {Object.entries(businessTypeLabels).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
                 </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
+              </Select><FormMessage /></FormItem>
           )} />
           <FormField control={form.control} name="order" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Rendi (opcional)</FormLabel>
-              <FormControl><Input type="number" placeholder="1" data-testid="input-ad-order" {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
+            <FormItem><FormLabel>Rendi</FormLabel><FormControl><Input type="number" placeholder="1" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
         </div>
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting} data-testid="button-submit-ad">
-          {form.formState.isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Duke ruajtur...</> : (adId ? "Përditëso" : "Krijo Reklamë")}
+        <Button type="submit" className="w-full" disabled={createAd.isPending || updateAd.isPending}>
+          {(createAd.isPending || updateAd.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {adId ? "Përditëso" : "Krijo"}
         </Button>
       </form>
     </Form>
   );
 }
 
-// ─── Stats Tab ────────────────────────────────────────────────────────────────
-function StatsTab() {
-  const { data: stats, isLoading } = useGetAdminStats({ query: { queryKey: getGetAdminStatsQueryKey() } });
-
-  const statCards = stats ? [
-    { label: "Përdorues gjithsej", value: stats.totalUsers, icon: Users2, color: "text-blue-600 bg-blue-50" },
-    { label: "Noterë të aprovuar", value: stats.totalNotaries, icon: FileText, color: "text-green-600 bg-green-50" },
-    { label: "Pérkthyes të aprovuar", value: stats.totalTranslators, icon: Languages, color: "text-purple-600 bg-purple-50" },
-    { label: "Kurse aktive", value: stats.totalCourses, icon: BarChart3, color: "text-orange-600 bg-orange-50" },
-    { label: "Reklama aktive", value: stats.totalAds, icon: MonitorPlay, color: "text-primary bg-primary/10" },
-    { label: "Aprovime në pritje", value: stats.pendingApprovals, icon: Users2, color: "text-yellow-600 bg-yellow-50" },
-  ] : [];
-
-  return (
-    <div>
-      <h2 className="text-lg font-semibold text-foreground mb-5">Statistikat e Platformës</h2>
-      {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
-        </div>
-      ) : (
-        <motion.div
-          initial="hidden" animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
-          className="grid grid-cols-2 md:grid-cols-3 gap-4"
-        >
-          {statCards.map(card => (
-            <motion.div
-              key={card.label}
-              variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-              className="bg-card border border-border rounded-xl p-5"
-            >
-              <div className={`w-10 h-10 rounded-lg ${card.color} flex items-center justify-center mb-3`}>
-                <card.icon className="h-5 w-5" />
-              </div>
-              <div className="text-2xl font-bold text-foreground">{card.value}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{card.label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-      {stats?.recentRegistrations !== undefined && (
-        <div className="mt-6 bg-card border border-border rounded-xl p-5">
-          <p className="text-sm text-muted-foreground">
-            Regjistrime të reja javën e fundit:
-            <span className="font-bold text-foreground ml-2">{stats.recentRegistrations}</span>
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Ads Tab ──────────────────────────────────────────────────────────────────
-function AdsTab() {
+// ─── Approval Modal ────────────────────────────────────────────────────────────
+function ApprovalModal({ user, type, onClose }: { user: any; type: "notary" | "translator"; onClose: () => void }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { data: ads, isLoading } = useListAds({ query: { queryKey: getListAdsQueryKey() } });
-  const deleteAd = useDeleteAd();
-  const [editAd, setEditAd] = useState<any>(null);
-  const [createOpen, setCreateOpen] = useState(false);
+  const [adminNotes, setAdminNotes] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [requestInfoMsg, setRequestInfoMsg] = useState("");
+  const [activeSection, setActiveSection] = useState<"approve" | "reject" | "info">("approve");
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Jeni i sigurt që dëshironi ta fshini këtë reklamë?")) return;
-    await deleteAd.mutateAsync({ id });
-    queryClient.invalidateQueries({ queryKey: getListAdsQueryKey() });
-    toast({ title: "Reklama u fshi." });
-  };
+  const doApprove = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/admin/approve/${user.userId}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminNotes }),
+      });
+      if (!res.ok) throw new Error("Gabim");
+    },
+    onSuccess: () => {
+      toast({ title: "Aprovuar!", description: `${user.fullName} u aprovua me sukses.` });
+      queryClient.invalidateQueries({ queryKey: ["admin-pending"] });
+      onClose();
+    },
+    onError: () => toast({ title: "Gabim", variant: "destructive" }),
+  });
+
+  const doReject = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/admin/reject/${user.userId}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rejectionReason, adminNotes }),
+      });
+      if (!res.ok) throw new Error("Gabim");
+    },
+    onSuccess: () => {
+      toast({ title: "Refuzuar", description: `${user.fullName} u refuzua.` });
+      queryClient.invalidateQueries({ queryKey: ["admin-pending"] });
+      onClose();
+    },
+    onError: () => toast({ title: "Gabim", variant: "destructive" }),
+  });
+
+  const doRequestInfo = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/admin/request-info/${user.userId}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: requestInfoMsg }),
+      });
+      if (!res.ok) throw new Error("Gabim");
+    },
+    onSuccess: () => {
+      toast({ title: "Kërkesë dërguar", description: "Përdoruesi u njoftua." });
+      queryClient.invalidateQueries({ queryKey: ["admin-pending"] });
+      onClose();
+    },
+    onError: () => toast({ title: "Gabim", variant: "destructive" }),
+  });
+
+  const roleLabel = type === "notary" ? "Noteri" : "Pérkthyesi";
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="font-serif text-lg font-semibold text-foreground">Menaxhimi i Reklamave</h2>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-1.5" data-testid="button-create-ad">
-              <Plus className="h-4 w-4" />Shto Reklamë
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Shto Reklamë të Re</DialogTitle></DialogHeader>
-            <AdFormModal onClose={() => setCreateOpen(false)} />
-          </DialogContent>
-        </Dialog>
+    <div className="space-y-5">
+      {/* Profile info */}
+      <div className="bg-muted/50 rounded-xl p-4 space-y-2 text-sm">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-primary font-bold text-lg">{user.fullName?.charAt(0)}</span>
+          </div>
+          <div>
+            <p className="font-semibold">{user.fullName}</p>
+            <p className="text-muted-foreground">{user.email}</p>
+            <Badge variant="outline" className="mt-1 text-xs">{roleLabel}</Badge>
+          </div>
+        </div>
+        {user.phone && <div className="flex justify-between"><span className="text-muted-foreground">Telefon</span><span>{user.phone}</span></div>}
+        {user.city && <div className="flex justify-between"><span className="text-muted-foreground">Qyteti</span><span>{user.city}</span></div>}
+        {type === "notary" && user.licenseNumber && <div className="flex justify-between"><span className="text-muted-foreground">Licensa</span><span className="font-mono text-xs">{user.licenseNumber}</span></div>}
+        {type === "translator" && user.languages?.length > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Gjuhët</span><span>{user.languages.join(", ")}</span></div>}
+        {user.bio && <div><span className="text-muted-foreground block">Bio</span><p className="text-xs mt-1">{user.bio}</p></div>}
+        <div className="flex justify-between"><span className="text-muted-foreground">Regjistruar</span><span>{new Date(user.createdAt).toLocaleDateString("sq-AL")}</span></div>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}
-        </div>
-      ) : ads?.length ? (
-        <div className="space-y-3">
-          {ads.map(ad => (
-            <div key={ad.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4" data-testid={`row-ad-${ad.id}`}>
-              {ad.imageUrl ? (
-                <img src={ad.imageUrl} alt={ad.title} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                  <Image className="h-6 w-6 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-medium text-foreground text-sm">{ad.title}</h3>
-                  <Badge variant={ad.isActive ? "default" : "secondary"} className="text-xs">
-                    {ad.isActive ? "Aktiv" : "Joaktiv"}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs capitalize">{businessTypeLabels[ad.businessType]}</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">{ad.description}</p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Dialog open={editAd?.id === ad.id} onOpenChange={open => !open && setEditAd(null)}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => setEditAd(ad)} data-testid={`button-edit-ad-${ad.id}`}>
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader><DialogTitle>Përditëso Reklamën</DialogTitle></DialogHeader>
-                    <AdFormModal
-                      adId={ad.id}
-                      defaultValues={{ title: ad.title, description: ad.description, imageUrl: ad.imageUrl || "", linkUrl: ad.linkUrl, businessType: ad.businessType as any, isActive: ad.isActive, order: ad.order ?? undefined }}
-                      onClose={() => setEditAd(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => handleDelete(ad.id)}
-                  disabled={deleteAd.isPending}
-                  data-testid={`button-delete-ad-${ad.id}`}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
+      {/* Documents */}
+      <div>
+        <p className="text-sm font-semibold mb-2">Dokumentet</p>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { key: "identityDocFrontUrl", label: "Kartë ID (para)" },
+            { key: "identityDocBackUrl", label: "Kartë ID (prapa)" },
+            { key: "selfieUrl", label: "Selfie me Dokument" },
+            ...(type === "notary"
+              ? [{ key: "professionalLicenseUrl", label: "Licensa Profesionale" }, { key: "govCertUrl", label: "Çertifikata Qeveritare" }]
+              : [{ key: "diplomaUrl", label: "Diploma" }, { key: "certificationUrl", label: "Çertifikata" }, { key: "cvUrl", label: "CV" }]
+            ),
+          ].map(doc => (
+            <div key={doc.key} className={`p-2 rounded-lg border text-xs flex items-center justify-between ${user[doc.key] ? "border-green-200 bg-green-50" : "border-border bg-muted/30 opacity-60"}`}>
+              <span>{doc.label}</span>
+              {user[doc.key]
+                ? <a href={`https://your-supabase-url.supabase.co/storage/v1/object/public/${user[doc.key]}`} target="_blank" className="text-primary hover:underline flex items-center gap-1"><Eye className="h-3 w-3" />Shiko</a>
+                : <span className="text-muted-foreground">Mungon</span>}
             </div>
           ))}
         </div>
-      ) : (
-        <div className="text-center py-16 text-muted-foreground">
-          <MonitorPlay className="h-12 w-12 mx-auto mb-3 opacity-25" />
-          <p>Nuk ka reklama aktualisht. Shto reklamën e parë!</p>
+      </div>
+
+      {/* Actions */}
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          {(["approve", "reject", "info"] as const).map(action => (
+            <button key={action} onClick={() => setActiveSection(action)}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-colors ${activeSection === action
+                ? action === "approve" ? "bg-green-100 text-green-700 border border-green-200"
+                  : action === "reject" ? "bg-red-100 text-red-700 border border-red-200"
+                  : "bg-amber-100 text-amber-700 border border-amber-200"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}>
+              {action === "approve" ? "Aprovo" : action === "reject" ? "Refuzo" : "Kërko Info"}
+            </button>
+          ))}
         </div>
-      )}
+
+        {activeSection === "approve" && (
+          <div className="space-y-2">
+            <Textarea rows={2} placeholder="Shënime admin (opcional)" value={adminNotes} onChange={e => setAdminNotes(e.target.value)} />
+            <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => doApprove.mutate()} disabled={doApprove.isPending}>
+              {doApprove.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+              Konfirmo Aprovimin
+            </Button>
+          </div>
+        )}
+
+        {activeSection === "reject" && (
+          <div className="space-y-2">
+            <Input placeholder="Arsyeja e refuzimit (shfaqet tek përdoruesi)" value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} />
+            <Textarea rows={2} placeholder="Shënime shtesë" value={adminNotes} onChange={e => setAdminNotes(e.target.value)} />
+            <Button variant="destructive" className="w-full" onClick={() => doReject.mutate()} disabled={doReject.isPending}>
+              {doReject.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <XCircle className="h-4 w-4 mr-2" />}
+              Konfirmo Refuzimin
+            </Button>
+          </div>
+        )}
+
+        {activeSection === "info" && (
+          <div className="space-y-2">
+            <Textarea rows={3} placeholder="Çfarë informacioni shtesë kërkohet?" value={requestInfoMsg} onChange={e => setRequestInfoMsg(e.target.value)} />
+            <Button variant="outline" className="w-full" onClick={() => doRequestInfo.mutate()} disabled={doRequestInfo.isPending}>
+              {doRequestInfo.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Info className="h-4 w-4 mr-2" />}
+              Dërgo Kërkesën
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-// ─── Pending Tab ──────────────────────────────────────────────────────────────
-function PendingTab() {
+// ─── Main AdminPanel ──────────────────────────────────────────────────────────
+export default function AdminPanel() {
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { role, loading } = useAuth();
   const queryClient = useQueryClient();
-  const { data: pending, isLoading } = useListPendingApprovals({ query: { queryKey: getListPendingApprovalsQueryKey() } });
-  const approveUser = useApproveUser();
-  const rejectUser = useRejectUser();
+  const [editAd, setEditAd] = useState<{ id: number; data: AdForm } | null>(null);
+  const [adDialogOpen, setAdDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ user: any; type: "notary" | "translator" } | null>(null);
 
-  const handleApprove = async (userId: string) => {
-    await approveUser.mutateAsync({ userId });
-    queryClient.invalidateQueries({ queryKey: getListPendingApprovalsQueryKey() });
-    queryClient.invalidateQueries({ queryKey: getGetAdminStatsQueryKey() });
-    toast({ title: "Aprovuar me sukses!" });
-  };
+  const { data: stats, isLoading: statsLoading } = useGetAdminStats({ query: { queryKey: getGetAdminStatsQueryKey() } });
+  const { data: ads, isLoading: adsLoading } = useListAds({ query: { queryKey: getListAdsQueryKey() } });
+  const deleteAd = useDeleteAd();
 
-  const handleReject = async (userId: string) => {
-    await rejectUser.mutateAsync({ userId });
-    queryClient.invalidateQueries({ queryKey: getListPendingApprovalsQueryKey() });
-    queryClient.invalidateQueries({ queryKey: getGetAdminStatsQueryKey() });
-    toast({ title: "Refuzuar." });
+  const { data: pending, isLoading: pendingLoading } = useQuery<{ notaries: any[]; translators: any[] }>({
+    queryKey: ["admin-pending"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/pending");
+      if (!res.ok) throw new Error("Gabim");
+      return res.json();
+    },
+  });
+
+  const { data: allUsers, isLoading: usersLoading } = useQuery<any[]>({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/users");
+      if (!res.ok) throw new Error("Gabim");
+      return res.json();
+    },
+  });
+
+  const { data: allNotaries } = useQuery<any[]>({
+    queryKey: ["admin-notaries"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/notaries");
+      if (!res.ok) throw new Error("Gabim");
+      return res.json();
+    },
+  });
+
+  const { data: allTranslators } = useQuery<any[]>({
+    queryKey: ["admin-translators"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/translators");
+      if (!res.ok) throw new Error("Gabim");
+      return res.json();
+    },
+  });
+
+  const { data: auditLogs } = useQuery<any[]>({
+    queryKey: ["admin-audit-logs"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/audit-logs");
+      if (!res.ok) throw new Error("Gabim");
+      return res.json();
+    },
+  });
+
+  const { data: tickets } = useQuery<any[]>({
+    queryKey: ["admin-tickets"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/support-tickets");
+      if (!res.ok) throw new Error("Gabim");
+      return res.json();
+    },
+  });
+
+  const handleDeleteAd = async (id: number) => {
+    try {
+      await deleteAd.mutateAsync({ id });
+      queryClient.invalidateQueries({ queryKey: getListAdsQueryKey() });
+      toast({ title: "Reklama u fshi!" });
+    } catch {
+      toast({ title: "Gabim", variant: "destructive" });
+    }
   };
 
   const totalPending = (pending?.notaries?.length ?? 0) + (pending?.translators?.length ?? 0);
+  const statusBadge = (status: string) => {
+    const map: Record<string, string> = {
+      pending: "bg-amber-100 text-amber-700", approved: "bg-green-100 text-green-700",
+      rejected: "bg-red-100 text-red-700", active: "bg-green-100 text-green-700",
+      suspended: "bg-red-100 text-red-700", more_info_requested: "bg-blue-100 text-blue-700",
+    };
+    const labels: Record<string, string> = {
+      pending: "Në Pritje", approved: "Aprovuar", rejected: "Refuzuar",
+      active: "Aktiv", suspended: "Pezulluar", more_info_requested: "Info Kërkuar",
+    };
+    return <Badge className={`${map[status] ?? "bg-muted text-muted-foreground"} border-0 text-xs`}>{labels[status] ?? status}</Badge>;
+  };
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-5">
-        <h2 className="text-lg font-semibold text-foreground">Aprovime në Pritje</h2>
-        {totalPending > 0 && (
-          <Badge className="bg-primary text-primary-foreground">{totalPending}</Badge>
-        )}
-      </div>
-
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1,2].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
-        </div>
-      ) : totalPending === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-25" />
-          <p>Asnjë kërkesë nuk pret aprovim.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {(pending?.notaries ?? []).length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Noterë</p>
-              <div className="space-y-2">
-                {pending!.notaries.map(n => (
-                  <div key={n.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4" data-testid={`pending-notary-${n.id}`}>
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary font-bold text-sm">{n.fullName.charAt(0)}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm">{n.fullName}</p>
-                      <p className="text-xs text-muted-foreground">{n.businessName} — {n.city}</p>
-                      <p className="text-xs text-muted-foreground">NIPT: {n.businessNumber}</p>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button size="sm" onClick={() => handleApprove(n.userId)} disabled={approveUser.isPending} data-testid={`button-approve-${n.userId}`} className="gap-1.5">
-                        <CheckCircle className="h-3.5 w-3.5" />Aprovo
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-destructive gap-1.5" onClick={() => handleReject(n.userId)} disabled={rejectUser.isPending} data-testid={`button-reject-${n.userId}`}>
-                        <XCircle className="h-3.5 w-3.5" />Refuzo
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {(pending?.translators ?? []).length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Pérkthyes</p>
-              <div className="space-y-2">
-                {pending!.translators.map(t => (
-                  <div key={t.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4" data-testid={`pending-translator-${t.id}`}>
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary font-bold text-sm">{t.fullName.charAt(0)}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm">{t.fullName}</p>
-                      <p className="text-xs text-muted-foreground">{t.languages.join(", ")} — {t.city}</p>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button size="sm" onClick={() => handleApprove(t.userId)} disabled={approveUser.isPending} className="gap-1.5">
-                        <CheckCircle className="h-3.5 w-3.5" />Aprovo
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-destructive gap-1.5" onClick={() => handleReject(t.userId)} disabled={rejectUser.isPending}>
-                        <XCircle className="h-3.5 w-3.5" />Refuzo
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Main Admin Panel ─────────────────────────────────────────────────────────
-export default function AdminPanel() {
-  const [, setLocation] = useLocation();
-
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-1">
-        <div className="bg-gradient-to-br from-secondary to-secondary/90 text-secondary-foreground py-10">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-              <Badge className="mb-3 bg-primary/20 text-primary border-primary/30">Administrim</Badge>
-              <h1 className="font-serif text-2xl font-bold">Paneli i Administratorit</h1>
-              <p className="text-secondary-foreground/70 text-sm mt-1">Menaxhoni platformen, reklamat dhe aprovimin e profesionistëve</p>
-            </motion.div>
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="font-serif text-3xl font-bold">Paneli i Administratorit</h1>
+              <p className="text-muted-foreground text-sm mt-1">Menaxhoni platformën ShërbimePro</p>
+            </div>
+            {totalPending > 0 && (
+              <Badge className="bg-amber-100 text-amber-700 border-amber-200 gap-1.5 px-3 py-1.5">
+                <AlertCircle className="h-3.5 w-3.5" />{totalPending} aprovime në pritje
+              </Badge>
+            )}
           </div>
-        </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Tabs defaultValue="stats">
-            <TabsList className="mb-6" data-testid="admin-tabs">
-              <TabsTrigger value="stats" className="gap-1.5" data-testid="tab-stats">
-                <LayoutDashboard className="h-4 w-4" />Dashboard
+          {/* Stats row */}
+          {statsLoading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+            </div>
+          ) : stats && (
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+              {[
+                { label: "Përdorues", value: (stats as any).totalUsers ?? 0, icon: Users2, color: "text-blue-600", bg: "bg-blue-50" },
+                { label: "Noterë", value: (stats as any).totalNotaries ?? 0, icon: FileText, color: "text-primary", bg: "bg-primary/10" },
+                { label: "Pérkthyes", value: (stats as any).totalTranslators ?? 0, icon: Languages, color: "text-emerald-600", bg: "bg-emerald-50" },
+                { label: "Porosi", value: (stats as any).totalOrders ?? 0, icon: ClipboardList, color: "text-orange-600", bg: "bg-orange-50" },
+                { label: "Të Reja (7d)", value: (stats as any).recentRegistrations ?? 0, icon: Activity, color: "text-violet-600", bg: "bg-violet-50" },
+                { label: "Aprovime", value: (stats as any).pendingApprovals ?? 0, icon: ShieldCheck, color: "text-amber-600", bg: "bg-amber-50" },
+              ].map((s, i) => {
+                const Icon = s.icon;
+                return (
+                  <div key={i} className="bg-card border rounded-xl p-4">
+                    <div className={`w-9 h-9 ${s.bg} rounded-xl flex items-center justify-center mb-2`}>
+                      <Icon className={`h-4 w-4 ${s.color}`} />
+                    </div>
+                    <p className="text-2xl font-bold">{s.value}</p>
+                    <p className="text-xs text-muted-foreground">{s.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Main tabs */}
+          <Tabs defaultValue="approvals" className="w-full">
+            <TabsList className="mb-6 flex flex-wrap gap-1 h-auto">
+              <TabsTrigger value="approvals" className="gap-1.5">
+                <ShieldCheck className="h-4 w-4" />Aprovime
+                {totalPending > 0 && <span className="ml-1 bg-amber-500 text-white text-xs rounded-full px-1.5 py-0.5">{totalPending}</span>}
               </TabsTrigger>
-              <TabsTrigger value="ads" className="gap-1.5" data-testid="tab-ads">
-                <MonitorPlay className="h-4 w-4" />Reklama
-              </TabsTrigger>
-              <TabsTrigger value="pending" className="gap-1.5" data-testid="tab-pending">
-                <Users2 className="h-4 w-4" />Aprovime
-              </TabsTrigger>
+              <TabsTrigger value="users" className="gap-1.5"><Users2 className="h-4 w-4" />Përdorues</TabsTrigger>
+              <TabsTrigger value="professionals" className="gap-1.5"><Languages className="h-4 w-4" />Profesionistë</TabsTrigger>
+              <TabsTrigger value="ads" className="gap-1.5"><Image className="h-4 w-4" />Reklamat</TabsTrigger>
+              <TabsTrigger value="audit" className="gap-1.5"><Activity className="h-4 w-4" />Audit Log</TabsTrigger>
+              <TabsTrigger value="tickets" className="gap-1.5"><MessageSquare className="h-4 w-4" />Tickets</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="stats"><StatsTab /></TabsContent>
-            <TabsContent value="ads"><AdsTab /></TabsContent>
-            <TabsContent value="pending"><PendingTab /></TabsContent>
+            {/* APPROVALS TAB */}
+            <TabsContent value="approvals">
+              {pendingLoading ? (
+                <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : totalPending === 0 ? (
+                <div className="text-center py-16 bg-card border rounded-xl">
+                  <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
+                  <p className="font-semibold">Asnjë aprovim në pritje</p>
+                  <p className="text-muted-foreground text-sm">Të gjitha profilet janë rishikuar.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Notaries */}
+                  {(pending?.notaries?.length ?? 0) > 0 && (
+                    <div>
+                      <h2 className="font-semibold mb-3 flex items-center gap-2"><FileText className="h-4 w-4 text-primary" />Noterë ({pending!.notaries.length})</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {pending!.notaries.map(n => (
+                          <div key={n.id} className="bg-card border rounded-xl p-5 hover:shadow-sm transition-shadow">
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <span className="text-primary font-bold">{n.fullName?.charAt(0)}</span>
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-sm">{n.fullName}</p>
+                                  <p className="text-xs text-muted-foreground">{n.email}</p>
+                                </div>
+                              </div>
+                              {statusBadge(n.status)}
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1 mb-4">
+                              {n.city && <p>📍 {n.city}{n.municipality ? `, ${n.municipality}` : ""}</p>}
+                              {n.phone && <p>📞 {n.phone}</p>}
+                              {n.licenseNumber && <p>🪪 Licensa: {n.licenseNumber}</p>}
+                            </div>
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" className="flex-1 gap-1" onClick={() => setSelectedUser({ user: n, type: "notary" })}>
+                                    <Eye className="h-3.5 w-3.5" />Rishiko
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                                  <DialogHeader><DialogTitle>Rishiko Noterin — {n.fullName}</DialogTitle></DialogHeader>
+                                  <ApprovalModal user={n} type="notary" onClose={() => setSelectedUser(null)} />
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Translators */}
+                  {(pending?.translators?.length ?? 0) > 0 && (
+                    <div>
+                      <h2 className="font-semibold mb-3 flex items-center gap-2"><Languages className="h-4 w-4 text-emerald-600" />Pérkthyes ({pending!.translators.length})</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {pending!.translators.map(t => (
+                          <div key={t.id} className="bg-card border rounded-xl p-5 hover:shadow-sm transition-shadow">
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                  <span className="text-emerald-700 font-bold">{t.fullName?.charAt(0)}</span>
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-sm">{t.fullName}</p>
+                                  <p className="text-xs text-muted-foreground">{t.email}</p>
+                                </div>
+                              </div>
+                              {statusBadge(t.status)}
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1 mb-4">
+                              {t.city && <p>📍 {t.city}</p>}
+                              {t.phone && <p>📞 {t.phone}</p>}
+                              {t.languages?.length > 0 && <p>🌐 {t.languages.slice(0, 4).join(", ")}{t.languages.length > 4 ? "..." : ""}</p>}
+                              {t.yearsExperience && <p>⏱️ {t.yearsExperience} vjet eksperiencë</p>}
+                            </div>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" className="w-full gap-1" onClick={() => setSelectedUser({ user: t, type: "translator" })}>
+                                  <Eye className="h-3.5 w-3.5" />Rishiko
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                                <DialogHeader><DialogTitle>Rishiko Pérkthyesin — {t.fullName}</DialogTitle></DialogHeader>
+                                <ApprovalModal user={t} type="translator" onClose={() => setSelectedUser(null)} />
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* USERS TAB */}
+            <TabsContent value="users">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-semibold">Të gjithë Pérdoruesit ({allUsers?.length ?? 0})</h2>
+              </div>
+              {usersLoading ? <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> :
+                <div className="bg-card border rounded-xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50 border-b">
+                        <tr>
+                          <th className="text-left p-3 font-medium text-muted-foreground">Pérdoruesi</th>
+                          <th className="text-left p-3 font-medium text-muted-foreground">Roli</th>
+                          <th className="text-left p-3 font-medium text-muted-foreground">Statusi</th>
+                          <th className="text-left p-3 font-medium text-muted-foreground">Regjistruar</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(allUsers ?? []).map((u: any) => (
+                          <tr key={u.id} className="border-b hover:bg-muted/30 transition-colors">
+                            <td className="p-3">
+                              <div>
+                                <p className="font-medium">{u.fullName || u.email}</p>
+                                <p className="text-xs text-muted-foreground">{u.email}</p>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <Badge variant="outline" className="text-xs">{u.role}</Badge>
+                            </td>
+                            <td className="p-3">{statusBadge(u.status)}</td>
+                            <td className="p-3 text-muted-foreground text-xs">{new Date(u.createdAt).toLocaleDateString("sq-AL")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              }
+            </TabsContent>
+
+            {/* PROFESSIONALS TAB */}
+            <TabsContent value="professionals">
+              <Tabs defaultValue="notaries">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="notaries">Noterë ({allNotaries?.length ?? 0})</TabsTrigger>
+                  <TabsTrigger value="translators">Pérkthyes ({allTranslators?.length ?? 0})</TabsTrigger>
+                </TabsList>
+                <TabsContent value="notaries">
+                  <div className="bg-card border rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50 border-b">
+                          <tr>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Noteri</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Qyteti</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Licensa</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Statusi</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Data</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(allNotaries ?? []).map((n: any) => (
+                            <tr key={n.id} className="border-b hover:bg-muted/30">
+                              <td className="p-3"><p className="font-medium">{n.fullName}</p><p className="text-xs text-muted-foreground">{n.email}</p></td>
+                              <td className="p-3 text-muted-foreground text-xs">{n.city}</td>
+                              <td className="p-3 font-mono text-xs">{n.licenseNumber || "—"}</td>
+                              <td className="p-3">{statusBadge(n.status)}</td>
+                              <td className="p-3 text-muted-foreground text-xs">{new Date(n.createdAt).toLocaleDateString("sq-AL")}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="translators">
+                  <div className="bg-card border rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50 border-b">
+                          <tr>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Pérkthyesi</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Gjuhët</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Eksperienca</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Statusi</th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">Data</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(allTranslators ?? []).map((t: any) => (
+                            <tr key={t.id} className="border-b hover:bg-muted/30">
+                              <td className="p-3"><p className="font-medium">{t.fullName}</p><p className="text-xs text-muted-foreground">{t.email}</p></td>
+                              <td className="p-3 text-xs text-muted-foreground">{t.languages?.slice(0, 3).join(", ")}</td>
+                              <td className="p-3 text-xs text-muted-foreground">{t.yearsExperience || "—"}</td>
+                              <td className="p-3">{statusBadge(t.status)}</td>
+                              <td className="p-3 text-muted-foreground text-xs">{new Date(t.createdAt).toLocaleDateString("sq-AL")}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
+
+            {/* ADS TAB */}
+            <TabsContent value="ads">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold">Reklamat ({ads?.length ?? 0})</h2>
+                <Dialog open={adDialogOpen} onOpenChange={setAdDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="gap-2" onClick={() => { setEditAd(null); setAdDialogOpen(true); }}>
+                      <Plus className="h-4 w-4" />Reklama e re
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader><DialogTitle>{editAd ? "Edito Reklamën" : "Reklama e re"}</DialogTitle></DialogHeader>
+                    <AdFormModal defaultValues={editAd?.data} adId={editAd?.id} onClose={() => { setAdDialogOpen(false); setEditAd(null); }} />
+                  </DialogContent>
+                </Dialog>
+              </div>
+              {adsLoading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div> :
+                <div className="space-y-3">
+                  {(ads ?? []).map((ad: any) => (
+                    <div key={ad.id} className="bg-card border rounded-xl p-4 flex items-center gap-4">
+                      {ad.imageUrl && <img src={ad.imageUrl} alt={ad.title} className="w-16 h-12 object-cover rounded-lg flex-shrink-0" onError={e => (e.currentTarget.style.display = "none")} />}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">{ad.title}</p>
+                          {ad.isActive ? <Badge className="bg-green-100 text-green-700 border-0 text-xs">Aktive</Badge> : <Badge className="bg-muted text-muted-foreground border-0 text-xs">Joaktive</Badge>}
+                          <Badge variant="outline" className="text-xs">{businessTypeLabels[ad.businessType] ?? ad.businessType}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{ad.description}</p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <Button size="sm" variant="outline" className="gap-1"
+                          onClick={() => { setEditAd({ id: ad.id, data: { title: ad.title, description: ad.description, imageUrl: ad.imageUrl || "", linkUrl: ad.linkUrl, businessType: ad.businessType, isActive: ad.isActive, order: ad.order ?? undefined } }); setAdDialogOpen(true); }}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10" onClick={() => handleDeleteAd(ad.id)} disabled={deleteAd.isPending}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              }
+            </TabsContent>
+
+            {/* AUDIT LOG TAB */}
+            <TabsContent value="audit">
+              <h2 className="font-semibold mb-4">Audit Log</h2>
+              <div className="bg-card border rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 border-b">
+                      <tr>
+                        <th className="text-left p-3 font-medium text-muted-foreground">Veprimi</th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">Tipi</th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">IP</th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">Data</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(auditLogs ?? []).slice(0, 50).map((log: any) => (
+                        <tr key={log.id} className="border-b hover:bg-muted/30">
+                          <td className="p-3 font-mono text-xs">{log.action}</td>
+                          <td className="p-3 text-xs text-muted-foreground">{log.entityType || "—"}</td>
+                          <td className="p-3 font-mono text-xs text-muted-foreground">{log.ipAddress || "—"}</td>
+                          <td className="p-3 text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString("sq-AL")}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* TICKETS TAB */}
+            <TabsContent value="tickets">
+              <h2 className="font-semibold mb-4">Support Tickets ({tickets?.length ?? 0})</h2>
+              {!tickets || tickets.length === 0 ? (
+                <div className="bg-card border rounded-xl p-12 text-center">
+                  <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="font-medium">Asnjë ticket ende.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {tickets.map((t: any) => (
+                    <div key={t.id} className="bg-card border rounded-xl p-4 flex items-start gap-3">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{t.subject}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{t.description?.slice(0, 120)}</p>
+                        <div className="flex gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs">{t.category}</Badge>
+                          <Badge variant="outline" className="text-xs">{t.priority}</Badge>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        {statusBadge(t.status)}
+                        <p className="text-xs text-muted-foreground mt-1">{new Date(t.createdAt).toLocaleDateString("sq-AL")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
-        </div>
+        </motion.div>
       </main>
     </div>
   );

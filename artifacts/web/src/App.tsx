@@ -7,7 +7,12 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import RegisterCustomer from "@/pages/RegisterCustomer";
+import RegisterTranslator from "@/pages/RegisterTranslator";
+import RegisterNotary from "@/pages/RegisterNotary";
 import Dashboard from "@/pages/Dashboard";
+import VerifyEmail from "@/pages/VerifyEmail";
+import PendingApproval from "@/pages/PendingApproval";
 import Notaries from "@/pages/Notaries";
 import NotaryDetail from "@/pages/NotaryDetail";
 import Translators from "@/pages/Translators";
@@ -16,7 +21,11 @@ import Courses from "@/pages/Courses";
 import CourseDetail from "@/pages/CourseDetail";
 import AdminPanel from "@/pages/AdminPanel";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000 },
+  },
+});
 
 function Router() {
   return (
@@ -24,6 +33,11 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/register/customer" component={RegisterCustomer} />
+      <Route path="/register/translator" component={RegisterTranslator} />
+      <Route path="/register/notary" component={RegisterNotary} />
+      <Route path="/verify-email" component={VerifyEmail} />
+      <Route path="/pending-approval" component={PendingApproval} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/notaries" component={Notaries} />
       <Route path="/notaries/:id" component={NotaryDetail} />
