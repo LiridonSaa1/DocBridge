@@ -3,6 +3,24 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 
+let _currentUserId: string | null = null;
+
+export function getUserIdHeader(): HeadersInit {
+  return _currentUserId ? { "x-user-id": _currentUserId } : {};
+}
+
+const _originalFetch = window.fetch.bind(window);
+window.fetch = (input, init) => {
+  if (_currentUserId) {
+    const headers = new Headers(init?.headers);
+    if (!headers.has("x-user-id")) {
+      headers.set("x-user-id", _currentUserId);
+    }
+    return _originalFetch(input, { ...init, headers });
+  }
+  return _originalFetch(input, init);
+};
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -28,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      _currentUserId = session?.user?.id ?? null;
       setLoading(false);
     });
 
@@ -36,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      _currentUserId = session?.user?.id ?? null;
       setLoading(false);
     });
 
