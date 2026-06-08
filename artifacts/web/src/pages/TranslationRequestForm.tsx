@@ -5,7 +5,6 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -358,21 +357,25 @@ export default function TranslationRequestForm() {
 
   const removeFile = (id: string) => setUploadFiles(prev => prev.filter(f => f.id !== id));
 
-  // ── Upload to Supabase Storage ──────────────────────────────────────────────
+  // ── Upload files via API ──────────────────────────────────────────────
   const uploadToStorage = async (): Promise<string[]> => {
     const urls: string[] = [];
     for (const uf of uploadFiles) {
       if (uf.status === "done" && uf.url) { urls.push(uf.url); continue; }
       setUploadFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: "uploading", progress: 30 } : f));
       try {
-        const path = `${user?.id}/${Date.now()}-${uf.file.name.replace(/\s/g, "_")}`;
-        const { error } = await supabase.storage.from("translation-documents").upload(path, uf.file);
-        if (error) {
-          setUploadFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: "error", error: error.message, progress: 0 } : f));
+        const formData = new FormData();
+        formData.append("file", uf.file);
+        const res = await fetch("/api/uploads/translation-documents", {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        if (!res.ok) {
+          setUploadFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: "error", error: "Gabim në ngarkim", progress: 0 } : f));
           continue;
         }
-        const { data: sd } = await supabase.storage.from("translation-documents").createSignedUrl(path, 60 * 60 * 24 * 7);
-        const url = sd?.signedUrl || path;
+        const { url } = await res.json();
         setUploadFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: "done", progress: 100, url } : f));
         urls.push(url);
       } catch {

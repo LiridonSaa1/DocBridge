@@ -11,3 +11,4 @@ export * from "./notifications";
 export * from "./audit_logs";
 export * from "./reviews";
 export * from "./support_tickets";
+export * from "./sessions";

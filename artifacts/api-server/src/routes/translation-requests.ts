@@ -7,7 +7,7 @@ const router = Router();
 
 // Get all requests for logged-in customer
 router.get("/translation-requests", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const requests = await db
     .select()
@@ -24,7 +24,7 @@ router.get("/translation-requests", async (req, res) => {
 
 // Get open requests (for translators to browse)
 router.get("/translation-requests/open", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const requests = await db
     .select()
@@ -41,7 +41,7 @@ router.get("/translation-requests/open", async (req, res) => {
 
 // Get single request
 router.get("/translation-requests/:id", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const [request] = await db
     .select()
@@ -58,7 +58,7 @@ router.get("/translation-requests/:id", async (req, res) => {
 
 // Create new translation request
 router.post("/translation-requests", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
 
   const {
@@ -110,7 +110,7 @@ router.post("/translation-requests", async (req, res) => {
 
 // Update request status
 router.patch("/translation-requests/:id", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const { status, assignedTranslatorId, completedFileUrls } = req.body;
   const [request] = await db

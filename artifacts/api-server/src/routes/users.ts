@@ -9,7 +9,7 @@ const router = Router();
 
 // Register / upsert a user record after Supabase signup
 router.post("/users/register", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const { email, role, firstName, lastName, fullName, phone, personalNumber, dateOfBirth, gender, country, city, address } = req.body;
   const [user] = await db.insert(usersTable).values({
@@ -47,7 +47,7 @@ router.post("/users/register", async (req, res) => {
 });
 
 router.get("/users/me", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
@@ -61,7 +61,7 @@ router.get("/users/:id", async (req, res) => {
 });
 
 router.patch("/users/:id", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId || userId !== req.params.id) { res.status(403).json({ error: "Forbidden" }); return; }
   const {
     firstName, lastName, fullName, phone, personalNumber,
@@ -88,7 +88,7 @@ router.patch("/users/:id", async (req, res) => {
 
 // Mark email as verified (called after Supabase email verification)
 router.post("/users/:id/verify-email", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId || userId !== req.params.id) { res.status(403).json({ error: "Forbidden" }); return; }
   const [user] = await db.update(usersTable).set({
     emailVerified: true,
@@ -102,7 +102,7 @@ router.post("/users/:id/verify-email", async (req, res) => {
 
 // Get user notifications
 router.get("/users/:id/notifications", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const notifications = await db
     .select()
@@ -115,7 +115,7 @@ router.get("/users/:id/notifications", async (req, res) => {
 
 // Mark notification as read
 router.patch("/users/:id/notifications/:notifId/read", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   await db.update(notificationsTable)
     .set({ isRead: true })
@@ -128,7 +128,7 @@ router.patch("/users/:id/notifications/:notifId/read", async (req, res) => {
 
 // Get audit logs for user (admin only or self)
 router.get("/users/:id/audit-logs", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const logs = await db
     .select()

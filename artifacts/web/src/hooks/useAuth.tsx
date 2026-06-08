@@ -1,65 +1,49 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 
-let _currentUserId: string | null = null;
-
-export function getUserIdHeader(): HeadersInit {
-  return _currentUserId ? { "x-user-id": _currentUserId } : {};
+export interface AuthUser {
+  id: string;
+  email: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
-const _originalFetch = window.fetch.bind(window);
-window.fetch = (input, init) => {
-  if (_currentUserId) {
-    const headers = new Headers(init?.headers);
-    if (!headers.has("x-user-id")) {
-      headers.set("x-user-id", _currentUserId);
-    }
-    return _originalFetch(input, { ...init, headers });
-  }
-  return _originalFetch(input, init);
-};
-
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: AuthUser | null;
   loading: boolean;
   role: string | null;
-  signOut: () => Promise<void>;
+  signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  session: null,
   loading: true,
   role: null,
-  signOut: async () => {},
+  signOut: () => {},
 });
 
+async function fetchSession(): Promise<AuthUser | null> {
+  try {
+    const res = await fetch("/api/auth/user", { credentials: "include" });
+    if (res.status === 401) return null;
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.id) return null;
+    return { id: data.id, email: data.email ?? null, firstName: data.firstName, lastName: data.lastName };
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      _currentUserId = session?.user?.id ?? null;
+    fetchSession().then((u) => {
+      setUser(u);
       setLoading(false);
     });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      _currentUserId = session?.user?.id ?? null;
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const { data: me } = useGetMe({
@@ -69,14 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const role = me?.role ?? user?.user_metadata?.role ?? null;
+  const role = me?.role ?? null;
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = () => {
+    window.location.href = "/api/logout";
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, role, signOut }}>
+    <AuthContext.Provider value={{ user, loading, role, signOut }}>
       {children}
     </AuthContext.Provider>
   );

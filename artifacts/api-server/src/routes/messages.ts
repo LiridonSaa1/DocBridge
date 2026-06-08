@@ -6,7 +6,7 @@ const router = Router();
 
 // Get conversation between two users
 router.get("/messages/:partnerId", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const messages = await db
     .select()
@@ -24,7 +24,7 @@ router.get("/messages/:partnerId", async (req, res) => {
 
 // Send a message
 router.post("/messages", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const { receiverId, content, orderId, requestId, attachmentUrl } = req.body;
   if (!receiverId || !content) { res.status(400).json({ error: "receiverId and content required" }); return; }
@@ -41,7 +41,7 @@ router.post("/messages", async (req, res) => {
 
 // Get all conversations (unique partners) for the current user
 router.get("/messages", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const messages = await db
     .select()

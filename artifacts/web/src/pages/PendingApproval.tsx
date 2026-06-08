@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Clock, CheckCircle2, XCircle, AlertCircle, Mail, Phone, FileText } from "lucide-react";

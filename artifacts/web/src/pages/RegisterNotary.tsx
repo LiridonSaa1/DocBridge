@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -73,18 +72,19 @@ export default function RegisterNotary() {
     const allData = { ...formData, ...values };
     setLoading(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({ email: allData.email, password: allData.password, options: { data: { role: "notary", full_name: `${allData.firstName} ${allData.lastName}` } } });
-      if (authError) { toast({ title: "Gabim", description: authError.message, variant: "destructive" }); setLoading(false); return; }
-      const userId = authData.user?.id;
-      if (!userId) { setLoading(false); return; }
-      const bucket = "professional-documents";
-      const uploadedUrls: Record<string, string> = {};
-      for (const [key, file] of Object.entries(files)) {
-        if (file) { const { data } = await supabase.storage.from(bucket).upload(`${userId}/${key}_${Date.now()}`, file, { upsert: true }); if (data) uploadedUrls[key] = data.path; }
+      const res = await fetch("/api/notaries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ fullName: `${allData.firstName} ${allData.lastName}`, businessName: allData.officeName, businessNumber: allData.licenseNumber, officeName: allData.officeName, officeAddress: allData.officeAddress, licenseNumber: allData.licenseNumber, taxNumber: allData.taxNumber, municipality: allData.municipality, workingHours: allData.workingHours, city: allData.municipality, address: allData.officeAddress, phone: allData.phone, email: allData.email, website: allData.website || null, iban: allData.iban || null, bio: allData.bio || null, certificationNumber: allData.licenseNumber }),
+      });
+      if (res.status === 401) {
+        toast({ title: "Duhet të hyni", description: "Ju lutemi hyni me llogari Replit.", variant: "destructive" });
+        window.location.href = "/api/login";
+        return;
       }
-      await fetch("/api/notaries", { method: "POST", headers: { "Content-Type": "application/json", "x-user-id": userId }, body: JSON.stringify({ fullName: `${allData.firstName} ${allData.lastName}`, businessName: allData.officeName, businessNumber: allData.licenseNumber, officeName: allData.officeName, officeAddress: allData.officeAddress, licenseNumber: allData.licenseNumber, taxNumber: allData.taxNumber, municipality: allData.municipality, workingHours: allData.workingHours, city: allData.municipality, address: allData.officeAddress, phone: allData.phone, email: allData.email, website: allData.website || null, iban: allData.iban || null, bio: allData.bio || null, certificationNumber: allData.licenseNumber, professionalLicenseUrl: uploadedUrls.professionalLicense || null, govCertUrl: uploadedUrls.govCert || null, identityDocFrontUrl: uploadedUrls.front || null, identityDocBackUrl: uploadedUrls.back || null, selfieUrl: uploadedUrls.selfie || null, officePhotos: uploadedUrls.officePhoto1 ? [uploadedUrls.officePhoto1] : [] }) });
       toast({ title: "Aplikimi u dërgua!", description: "Profili juaj do të rishikohet brenda 48-72 orëve." });
-      setLocation("/verify-email");
+      setLocation("/pending-approval");
     } catch (err: any) { toast({ title: "Gabim", description: err.message ?? "Ndodhi një gabim.", variant: "destructive" }); }
     finally { setLoading(false); }
   };
@@ -178,29 +178,29 @@ export default function RegisterNotary() {
                 {step === 1 && (
                   <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div><DarkLabel>Emri *</DarkLabel><FormField control={form.control} name="firstName" render={({ field }) => (<><DarkInput placeholder="Agim" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
-                      <div><DarkLabel>Mbiemri *</DarkLabel><FormField control={form.control} name="lastName" render={({ field }) => (<><DarkInput placeholder="Berisha" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
+                      <div><DarkLabel>Emri *</DarkLabel><FormField control={form.control} name="firstName" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Agim" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
+                      <div><DarkLabel>Mbiemri *</DarkLabel><FormField control={form.control} name="lastName" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Berisha" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     </div>
-                    <div><DarkLabel>Email *</DarkLabel><FormField control={form.control} name="email" render={({ field }) => (<><DarkInput type="email" placeholder="emri@shembull.com" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
-                    <div><DarkLabel>Telefon *</DarkLabel><FormField control={form.control} name="phone" render={({ field }) => (<><DarkInput placeholder="+355 69..." {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
+                    <div><DarkLabel>Email *</DarkLabel><FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormControl><DarkInput type="email" placeholder="emri@shembull.com" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
+                    <div><DarkLabel>Telefon *</DarkLabel><FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="+355 69..." {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div><DarkLabel>Fjalëkalimi *</DarkLabel><FormField control={form.control} name="password" render={({ field }) => (<><DarkInput type="password" placeholder="Min. 8 karaktere" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
-                      <div><DarkLabel>Konfirmo *</DarkLabel><FormField control={form.control} name="confirmPassword" render={({ field }) => (<><DarkInput type="password" placeholder="Përsërit" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
+                      <div><DarkLabel>Fjalëkalimi *</DarkLabel><FormField control={form.control} name="password" render={({ field }) => (<FormItem><FormControl><DarkInput type="password" placeholder="Min. 8 karaktere" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
+                      <div><DarkLabel>Konfirmo *</DarkLabel><FormField control={form.control} name="confirmPassword" render={({ field }) => (<FormItem><FormControl><DarkInput type="password" placeholder="Përsërit" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     </div>
                   </motion.div>
                 )}
 
                 {step === 2 && (
                   <motion.div key="s2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="space-y-4">
-                    <div><DarkLabel>Emri i Zyrës Noteriale *</DarkLabel><FormField control={form.control} name="officeName" render={({ field }) => (<><DarkInput placeholder="Noteri Berisha" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
-                    <div><DarkLabel>Adresa e Zyrës *</DarkLabel><FormField control={form.control} name="officeAddress" render={({ field }) => (<><DarkInput placeholder="Rruga, Nr, Qyteti" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
+                    <div><DarkLabel>Emri i Zyrës Noteriale *</DarkLabel><FormField control={form.control} name="officeName" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Noteri Berisha" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
+                    <div><DarkLabel>Adresa e Zyrës *</DarkLabel><FormField control={form.control} name="officeAddress" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Rruga, Nr, Qyteti" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div><DarkLabel>Numri i Licencës *</DarkLabel><FormField control={form.control} name="licenseNumber" render={({ field }) => (<><DarkInput placeholder="NOT-12345" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
-                      <div><DarkLabel>Numri Fiskal *</DarkLabel><FormField control={form.control} name="taxNumber" render={({ field }) => (<><DarkInput {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
+                      <div><DarkLabel>Numri i Licencës *</DarkLabel><FormField control={form.control} name="licenseNumber" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="NOT-12345" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
+                      <div><DarkLabel>Numri Fiskal *</DarkLabel><FormField control={form.control} name="taxNumber" render={({ field }) => (<FormItem><FormControl><DarkInput {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField control={form.control} name="municipality" render={({ field }) => (<div><DarkLabel>Bashkia *</DarkLabel><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni" /></SelectTrigger><SelectContent>{MUNICIPALITIES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select><FormMessage className="text-red-400 text-xs mt-1" /></div>)} />
-                      <div><DarkLabel>Orari i Punës *</DarkLabel><FormField control={form.control} name="workingHours" render={({ field }) => (<><DarkInput placeholder="E Hënë-E Premte 08:00-17:00" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} /></div>
+                      <FormField control={form.control} name="municipality" render={({ field }) => (<FormItem><DarkLabel>Bashkia *</DarkLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni" /></SelectTrigger><SelectContent>{MUNICIPALITIES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
+                      <div><DarkLabel>Orari i Punës *</DarkLabel><FormField control={form.control} name="workingHours" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="E Hënë-E Premte 08:00-17:00" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div><DarkLabel>IBAN</DarkLabel><FormField control={form.control} name="iban" render={({ field }) => (<DarkInput placeholder="AL47 2121..." {...field} />)} /></div>
@@ -246,7 +246,7 @@ export default function RegisterNotary() {
                       Duhet të verifikojmë identitetin tuaj personal.
                     </div>
                     <FormField control={form.control} name="documentType" render={({ field }) => (
-                      <div><DarkLabel>Lloji i Dokumentit *</DarkLabel><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni" /></SelectTrigger><SelectContent><SelectItem value="passport">Pasaportë</SelectItem><SelectItem value="national_id">Kartë Identiteti</SelectItem></SelectContent></Select><FormMessage className="text-red-400 text-xs mt-1" /></div>
+                      <FormItem><DarkLabel>Lloji i Dokumentit *</DarkLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni" /></SelectTrigger><SelectContent><SelectItem value="passport">Pasaportë</SelectItem><SelectItem value="national_id">Kartë Identiteti</SelectItem></SelectContent></Select></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>
                     )} />
                     <div className="space-y-3">
                       {[{ key: "front", label: "Faqja Përpara *" }, { key: "back", label: "Faqja Prapa" }, { key: "selfie", label: "Selfie me Dokument *" }].map(({ key, label }) => (
@@ -266,11 +266,11 @@ export default function RegisterNotary() {
                       ))}
                     </div>
                     <FormField control={form.control} name="confirmAccuracy" render={({ field }) => (
-                      <div className="flex items-start gap-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} className="mt-0.5" />
+                      <FormItem className="flex items-start gap-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="mt-0.5" /></FormControl>
                         <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>Konfirmoj që të gjitha informacionet dhe dokumentet janë autentike dhe të sakta.</p>
                         <FormMessage className="text-red-400 text-xs" />
-                      </div>
+                      </FormItem>
                     )} />
                   </motion.div>
                 )}

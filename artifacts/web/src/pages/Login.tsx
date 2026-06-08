@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import {
   Loader2, Eye, EyeOff, ArrowRight, CheckCircle, Shield,
@@ -16,6 +14,7 @@ const loginSchema = z.object({
   password: z.string().min(6, "Fjalëkalimi duhet të ketë të paktën 6 karaktere"),
 });
 type LoginForm = z.infer<typeof loginSchema>;
+
 
 /* ─── Particle dot ─────────────────────────────────────────────── */
 function Particle({ x, y, delay, size, duration }: { x: string; y: string; delay: number; size: number; duration: number }) {
@@ -133,19 +132,21 @@ const STATS = [
 ];
 
 export default function Login() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const leftRef = useRef<HTMLDivElement>(null);
 
-  // Mouse parallax for left panel
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const springX = useSpring(mouseX, { stiffness: 60, damping: 20 });
   const springY = useSpring(mouseY, { stiffness: 60, damping: 20 });
   const orbX = useTransform(springX, [-400, 400], [-20, 20]);
   const orbY = useTransform(springY, [-300, 300], [-15, 15]);
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = leftRef.current?.getBoundingClientRect();
@@ -154,22 +155,12 @@ export default function Login() {
     mouseY.set(e.clientY - rect.top - rect.height / 2);
   };
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
-  });
+  const onSubmit = async (_values: LoginForm) => {
+    window.location.href = "/api/login";
+  };
 
-  const onSubmit = async (values: LoginForm) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
-      password: values.password,
-    });
-    if (error) {
-      toast({ title: "Gabim", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Mirë se vini!", description: "Hytet me sukses." });
-      setLocation("/dashboard");
-    }
+  const onLogin = () => {
+    window.location.href = "/api/login";
   };
 
   return (
@@ -428,7 +419,7 @@ export default function Login() {
             </motion.p>
 
             {/* ── Form ── */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mb-6">
 
               {/* Email */}
               <motion.div
@@ -551,13 +542,10 @@ export default function Login() {
                   data-testid="button-submit-login"
                   className="w-full py-3.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 mt-1 relative overflow-hidden"
                   style={{
-                    background: isSubmitting
-                      ? "rgba(109,40,217,0.45)"
-                      : "linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)",
+                    background: isSubmitting ? "rgba(109,40,217,0.45)" : "linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)",
                     boxShadow: isSubmitting ? "none" : "0 4px 20px rgba(109,40,217,0.4)",
                   }}
                 >
-                  {/* Shimmer overlay on button */}
                   {!isSubmitting && (
                     <motion.div
                       className="absolute inset-0"
@@ -576,18 +564,6 @@ export default function Login() {
                 </motion.button>
               </motion.div>
             </form>
-
-            {/* Divider */}
-            <motion.div
-              className="flex items-center gap-3 my-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-              <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.22)" }}>ose</span>
-              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-            </motion.div>
 
             {/* Register link */}
             <motion.p

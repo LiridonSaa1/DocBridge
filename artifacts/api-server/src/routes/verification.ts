@@ -7,7 +7,7 @@ const router = Router();
 
 // Submit identity verification documents
 router.post("/verification/documents", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const { documentType, frontUrl, backUrl, selfieUrl } = req.body;
   if (!documentType || !frontUrl || !selfieUrl) {
@@ -27,7 +27,7 @@ router.post("/verification/documents", async (req, res) => {
 
 // Get verification documents for a user
 router.get("/verification/documents/:userId", async (req, res) => {
-  const requesterId = req.headers["x-user-id"] as string;
+  const requesterId = req.userId as string;
   if (!requesterId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const docs = await db
     .select()
@@ -38,7 +38,7 @@ router.get("/verification/documents/:userId", async (req, res) => {
 
 // Admin: update document status
 router.patch("/verification/documents/:id/status", async (req, res) => {
-  const requesterId = req.headers["x-user-id"] as string;
+  const requesterId = req.userId as string;
   if (!requesterId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const { status, flagReason, adminNotes } = req.body;
   const [doc] = await db.update(verificationDocumentsTable).set({

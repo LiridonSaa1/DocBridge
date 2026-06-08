@@ -3,7 +3,6 @@ import { useLocation, Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -92,27 +91,19 @@ export default function RegisterCustomer() {
     const allData = { ...formData, ...values };
     setLoading(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: allData.email, password: allData.password,
-        options: { data: { role: "customer", full_name: `${allData.firstName} ${allData.lastName}`, first_name: allData.firstName, last_name: allData.lastName } },
+      const res = await fetch("/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: allData.email, role: "customer", firstName: allData.firstName, lastName: allData.lastName, fullName: `${allData.firstName} ${allData.lastName}`, phone: allData.phone, personalNumber: allData.personalNumber ?? null, dateOfBirth: allData.dateOfBirth, gender: allData.gender, country: allData.country, city: allData.city, address: allData.address }),
       });
-      if (authError) { toast({ title: "Gabim", description: authError.message, variant: "destructive" }); setLoading(false); return; }
-      const userId = authData.user?.id;
-      if (!userId) { setLoading(false); return; }
-      await fetch("/api/users/register", {
-        method: "POST", headers: { "Content-Type": "application/json", "x-user-id": userId },
-        body: JSON.stringify({ id: userId, email: allData.email, role: "customer", firstName: allData.firstName, lastName: allData.lastName, fullName: `${allData.firstName} ${allData.lastName}`, phone: allData.phone, personalNumber: allData.personalNumber ?? null, dateOfBirth: allData.dateOfBirth, gender: allData.gender, country: allData.country, city: allData.city, address: allData.address, verificationStatus: "pending_email", status: "pending" }),
-      });
-      if (frontFile || selfieFile) {
-        const bucket = "identity-documents";
-        const uploads: Promise<any>[] = [];
-        if (frontFile) uploads.push(supabase.storage.from(bucket).upload(`${userId}/front_${Date.now()}`, frontFile, { upsert: true }));
-        if (backFile) uploads.push(supabase.storage.from(bucket).upload(`${userId}/back_${Date.now()}`, backFile, { upsert: true }));
-        if (selfieFile) uploads.push(supabase.storage.from(bucket).upload(`${userId}/selfie_${Date.now()}`, selfieFile, { upsert: true }));
-        await Promise.allSettled(uploads);
+      if (res.status === 401) {
+        toast({ title: "Duhet të hyni", description: "Ju lutemi hyni me llogari Replit.", variant: "destructive" });
+        window.location.href = "/api/login";
+        return;
       }
-      toast({ title: "Llogaria u krijua!", description: "Ju lutemi verifikoni emailin tuaj." });
-      setLocation("/verify-email");
+      toast({ title: "Profili u përditësua!", description: "Informacioni juaj u ruajt me sukses." });
+      setLocation("/dashboard");
     } catch (err: any) {
       toast({ title: "Gabim", description: err.message ?? "Ndodhi një gabim.", variant: "destructive" });
     } finally { setLoading(false); }
@@ -243,27 +234,27 @@ export default function RegisterCustomer() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <DarkLabel>Emri *</DarkLabel>
-                        <FormField control={form.control} name="firstName" render={({ field }) => (<><DarkInput placeholder="Agim" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                        <FormField control={form.control} name="firstName" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Agim" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                       </div>
                       <div>
                         <DarkLabel>Mbiemri *</DarkLabel>
-                        <FormField control={form.control} name="lastName" render={({ field }) => (<><DarkInput placeholder="Berisha" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                        <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Berisha" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <DarkLabel>Data e Lindjes *</DarkLabel>
-                        <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<><DarkInput type="date" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                        <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<FormItem><FormControl><DarkInput type="date" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                       </div>
                       <FormField control={form.control} name="gender" render={({ field }) => (
-                        <div>
+                        <FormItem>
                           <DarkLabel>Gjinia *</DarkLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni" /></SelectTrigger>
                             <SelectContent><SelectItem value="male">Mashkull</SelectItem><SelectItem value="female">Femër</SelectItem><SelectItem value="other">Tjetër</SelectItem></SelectContent>
-                          </Select>
+                          </Select></FormControl>
                           <FormMessage className="text-red-400 text-xs mt-1" />
-                        </div>
+                        </FormItem>
                       )} />
                     </div>
                     <div>
@@ -272,20 +263,20 @@ export default function RegisterCustomer() {
                     </div>
                     <div>
                       <DarkLabel>Email *</DarkLabel>
-                      <FormField control={form.control} name="email" render={({ field }) => (<><DarkInput type="email" placeholder="emri@shembull.com" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                      <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormControl><DarkInput type="email" placeholder="emri@shembull.com" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                     </div>
                     <div>
                       <DarkLabel>Telefon *</DarkLabel>
-                      <FormField control={form.control} name="phone" render={({ field }) => (<><DarkInput placeholder="+355 69 123 4567" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                      <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="+355 69 123 4567" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <DarkLabel>Fjalëkalimi *</DarkLabel>
-                        <FormField control={form.control} name="password" render={({ field }) => (<><DarkInput type="password" placeholder="Min. 8 karaktere" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                        <FormField control={form.control} name="password" render={({ field }) => (<FormItem><FormControl><DarkInput type="password" placeholder="Min. 8 karaktere" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                       </div>
                       <div>
                         <DarkLabel>Konfirmo Fjalëkalimin *</DarkLabel>
-                        <FormField control={form.control} name="confirmPassword" render={({ field }) => (<><DarkInput type="password" placeholder="Përsërit" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                        <FormField control={form.control} name="confirmPassword" render={({ field }) => (<FormItem><FormControl><DarkInput type="password" placeholder="Përsërit" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                       </div>
                     </div>
                   </motion.div>
@@ -295,22 +286,22 @@ export default function RegisterCustomer() {
                 {step === 2 && (
                   <motion.div key="s2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="space-y-4">
                     <FormField control={form.control} name="country" render={({ field }) => (
-                      <div>
+                      <FormItem>
                         <DarkLabel>Shteti *</DarkLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni shtetin" /></SelectTrigger>
                           <SelectContent>{COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                        </Select>
+                        </Select></FormControl>
                         <FormMessage className="text-red-400 text-xs mt-1" />
-                      </div>
+                      </FormItem>
                     )} />
                     <div>
                       <DarkLabel>Qyteti *</DarkLabel>
-                      <FormField control={form.control} name="city" render={({ field }) => (<><DarkInput placeholder="Tiranë" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                      <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Tiranë" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                     </div>
                     <div>
                       <DarkLabel>Adresa *</DarkLabel>
-                      <FormField control={form.control} name="address" render={({ field }) => (<><DarkInput placeholder="Rruga Myslym Shyri, Nr. 12, Ap. 3" {...field} /><FormMessage className="text-red-400 text-xs mt-1" /></>)} />
+                      <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="Rruga Myslym Shyri, Nr. 12, Ap. 3" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                     </div>
                   </motion.div>
                 )}
@@ -322,18 +313,18 @@ export default function RegisterCustomer() {
                       Kërkohet të ngarkoni një dokument identiteti valid. Ruhet i sigurt dhe shihet vetëm nga administratorët.
                     </div>
                     <FormField control={form.control} name="documentType" render={({ field }) => (
-                      <div>
+                      <FormItem>
                         <DarkLabel>Lloji i Dokumentit *</DarkLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni dokumentin" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="passport">Pasaportë</SelectItem>
                             <SelectItem value="national_id">Kartë Identiteti</SelectItem>
                             <SelectItem value="driver_license">Patentë Shoferi</SelectItem>
                           </SelectContent>
-                        </Select>
+                        </Select></FormControl>
                         <FormMessage className="text-red-400 text-xs mt-1" />
-                      </div>
+                      </FormItem>
                     )} />
                     <div className="space-y-3">
                       {[
@@ -357,13 +348,13 @@ export default function RegisterCustomer() {
                       ))}
                     </div>
                     <FormField control={form.control} name="confirmAccuracy" render={({ field }) => (
-                      <div className="flex items-start gap-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} className="mt-0.5" />
+                      <FormItem className="flex items-start gap-3 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="mt-0.5" /></FormControl>
                         <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
                           Konfirmoj që të gjitha informacionet e dhëna janë të sakta dhe autentike.
                         </p>
                         <FormMessage className="text-red-400 text-xs" />
-                      </div>
+                      </FormItem>
                     )} />
                   </motion.div>
                 )}

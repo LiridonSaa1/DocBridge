@@ -1,18 +1,20 @@
 import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import adsRouter from "./ads";
-import notariesRouter from "./notaries";
-import translatorsRouter from "./translators";
-import coursesRouter from "./courses";
-import usersRouter from "./users";
-import adminRouter from "./admin";
-import messagesRouter from "./messages";
-import translationRequestsRouter from "./translation-requests";
-import ordersRouter from "./orders";
-import verificationRouter from "./verification";
+import healthRouter from "./health.js";
+import adsRouter from "./ads.js";
+import notariesRouter from "./notaries.js";
+import translatorsRouter from "./translators.js";
+import coursesRouter from "./courses.js";
+import usersRouter from "./users.js";
+import adminRouter from "./admin.js";
+import messagesRouter from "./messages.js";
+import translationRequestsRouter from "./translation-requests.js";
+import ordersRouter from "./orders.js";
+import verificationRouter from "./verification.js";
+import authRouter from "./auth.js";
 
 const router: IRouter = Router();
 
+router.use(authRouter);
 router.use(healthRouter);
 router.use(adsRouter);
 router.use(notariesRouter);

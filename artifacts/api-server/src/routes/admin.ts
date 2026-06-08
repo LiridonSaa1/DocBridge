@@ -86,7 +86,7 @@ router.get("/admin/verification/:userId", async (req, res) => {
 
 // Approve professional
 router.post("/admin/approve/:userId", async (req, res) => {
-  const adminId = req.headers["x-user-id"] as string;
+  const adminId = req.userId as string;
   const { adminNotes } = req.body;
   const userId = req.params.userId;
   const [notary] = await db.update(notariesTable).set({ status: "approved", adminNotes: adminNotes ?? null, updatedAt: new Date() }).where(eq(notariesTable.userId, userId)).returning();
@@ -108,7 +108,7 @@ router.post("/admin/approve/:userId", async (req, res) => {
 
 // Reject professional
 router.post("/admin/reject/:userId", async (req, res) => {
-  const adminId = req.headers["x-user-id"] as string;
+  const adminId = req.userId as string;
   const { rejectionReason, adminNotes } = req.body;
   const userId = req.params.userId;
   const [notary] = await db.update(notariesTable).set({ status: "rejected", rejectionReason: rejectionReason ?? null, adminNotes: adminNotes ?? null, updatedAt: new Date() }).where(eq(notariesTable.userId, userId)).returning();
@@ -130,7 +130,7 @@ router.post("/admin/reject/:userId", async (req, res) => {
 
 // Request more info from professional
 router.post("/admin/request-info/:userId", async (req, res) => {
-  const adminId = req.headers["x-user-id"] as string;
+  const adminId = req.userId as string;
   const { message } = req.body;
   const userId = req.params.userId;
   const [notary] = await db.update(notariesTable).set({ status: "more_info_requested", adminNotes: message ?? null, updatedAt: new Date() }).where(eq(notariesTable.userId, userId)).returning();
@@ -150,7 +150,7 @@ router.post("/admin/request-info/:userId", async (req, res) => {
 
 // Suspend user
 router.post("/admin/suspend/:userId", async (req, res) => {
-  const adminId = req.headers["x-user-id"] as string;
+  const adminId = req.userId as string;
   const { reason } = req.body;
   const userId = req.params.userId;
   await db.update(usersTable).set({ status: "suspended", verificationStatus: "rejected", updatedAt: new Date() }).where(eq(usersTable.id, userId));

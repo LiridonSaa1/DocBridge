@@ -8,7 +8,7 @@ const router = Router();
 
 // Get orders for current user (as customer or provider)
 router.get("/orders", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const orders = await db
     .select()
@@ -26,7 +26,7 @@ router.get("/orders", async (req, res) => {
 
 // Get single order
 router.get("/orders/:id", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, parseInt(req.params.id)));
   if (!order) { res.status(404).json({ error: "Order not found" }); return; }
@@ -41,7 +41,7 @@ router.get("/orders/:id", async (req, res) => {
 
 // Create order (from a translation request, accepted by provider)
 router.post("/orders", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const { requestId, customerId, price, currency, deadline, providerType } = req.body;
   if (!requestId || !customerId) { res.status(400).json({ error: "requestId and customerId are required" }); return; }
@@ -68,7 +68,7 @@ router.post("/orders", async (req, res) => {
 
 // Update order status
 router.patch("/orders/:id", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const { status, completedFileUrls, customerRating, customerReview, invoiceUrl } = req.body;
   const updateData: Record<string, unknown> = { updatedAt: new Date() };

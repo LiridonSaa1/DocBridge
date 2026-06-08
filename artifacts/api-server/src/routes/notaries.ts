@@ -22,7 +22,7 @@ router.get("/notaries/:id", async (req, res) => {
 });
 
 router.post("/notaries", async (req, res) => {
-  const userId = req.headers["x-user-id"] as string;
+  const userId = req.userId as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
   const body = req.body;
   const [existing] = await db.select().from(notariesTable).where(eq(notariesTable.userId, userId));
