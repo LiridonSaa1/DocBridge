@@ -21,7 +21,7 @@ function Particle({ x, y, delay, size, duration }: { x: string; y: string; delay
   return (
     <motion.div
       className="absolute rounded-full pointer-events-none"
-      style={{ left: x, top: y, width: size, height: size, background: "rgba(139,92,246,0.6)" }}
+      style={{ left: x, top: y, width: size, height: size, background: "rgba(245,158,11,0.6)" }}
       initial={{ opacity: 0, scale: 0 }}
       animate={{ opacity: [0, 0.8, 0], scale: [0, 1, 0], y: [0, -60, -120] }}
       transition={{ duration, repeat: Infinity, delay, ease: "easeOut" }}
@@ -88,12 +88,12 @@ function TypewriterWord() {
   }, [displayed, phase, wordIdx]);
 
   return (
-    <span style={{ color: "#a78bfa" }}>
+    <span style={{ color: "#fbbf24" }}>
       {displayed}
       <motion.span
         animate={{ opacity: [1, 0] }}
         transition={{ duration: 0.6, repeat: Infinity }}
-        className="inline-block w-0.5 h-10 bg-violet-400 ml-1 align-middle"
+        className="inline-block w-0.5 h-10 bg-amber-400 ml-1 align-middle"
       />
     </span>
   );
@@ -104,8 +104,8 @@ function GlowRing() {
   return (
     <motion.div
       className="absolute inset-0 rounded-2xl pointer-events-none"
-      style={{ border: "1px solid rgba(139,92,246,0.0)" }}
-      whileHover={{ borderColor: "rgba(139,92,246,0.4)" }}
+      style={{ border: "1px solid rgba(245,158,11,0.0)" }}
+      whileHover={{ borderColor: "rgba(245,158,11,0.4)" }}
       transition={{ duration: 0.3 }}
     />
   );
@@ -120,9 +120,9 @@ const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
 }));
 
 const FEATURES = [
-  { icon: Shield, label: "Noterë të Certifikuar", desc: "Verifikuar nga autoritetet shtetërore", color: "#8b5cf6" },
-  { icon: Languages, label: "Përkthyes Profesionistë", desc: "Çertifikuar dhe me eksperiencë", color: "#6366f1" },
-  { icon: BookOpen, label: "Kurse Cilësore", desc: "Trajnime profesionale dhe akademike", color: "#7c3aed" },
+  { icon: Shield, label: "Noterë të Certifikuar", desc: "Verifikuar nga autoritetet shtetërore", color: "#f59e0b" },
+  { icon: Languages, label: "Përkthyes Profesionistë", desc: "Çertifikuar dhe me eksperiencë", color: "#d97706" },
+  { icon: BookOpen, label: "Kurse Cilësore", desc: "Trajnime profesionale dhe akademike", color: "#d97706" },
 ];
 
 const STATS = [
@@ -164,21 +164,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden" style={{ background: "#080816" }}>
+    <div className="min-h-screen flex overflow-hidden" style={{ background: "#070808" }}>
 
       {/* ══════════════════ LEFT PANEL ══════════════════════════════ */}
       <motion.div
         ref={leftRef}
         onMouseMove={handleMouseMove}
         className="hidden lg:flex lg:w-[52%] relative flex-col justify-between p-14 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0a0a1f 0%, #0d0d2e 60%, #0f0a1e 100%)" }}
+        style={{ background: "linear-gradient(135deg, #0a0804 0%, #0e0b04 60%, #120c05 100%)" }}
       >
         {/* ── Deep ambient orbs ── */}
         <motion.div style={{ x: orbX, y: orbY }} className="absolute inset-0 pointer-events-none">
-          <FloatingOrb x="5%"  y="10%" size={420} delay={0} color="rgba(109,40,217,0.22)" blur={100} />
-          <FloatingOrb x="55%" y="55%" size={320} delay={2} color="rgba(190,24,93,0.10)" blur={80}  />
-          <FloatingOrb x="-8%" y="65%" size={260} delay={1} color="rgba(67,56,202,0.18)"  blur={90}  />
-          <FloatingOrb x="70%" y="5%"  size={200} delay={3} color="rgba(139,92,246,0.14)" blur={70}  />
+          <FloatingOrb x="5%"  y="10%" size={420} delay={0} color="rgba(180,83,9,0.22)" blur={100} />
+          <FloatingOrb x="55%" y="55%" size={320} delay={2} color="rgba(120,53,15,0.10)" blur={80}  />
+          <FloatingOrb x="-8%" y="65%" size={260} delay={1} color="rgba(146,64,14,0.18)"  blur={90}  />
+          <FloatingOrb x="70%" y="5%"  size={200} delay={3} color="rgba(245,158,11,0.14)" blur={70}  />
         </motion.div>
 
         {/* ── Rising particles ── */}
@@ -193,7 +193,7 @@ export default function Login() {
         {/* ── Diagonal shimmer sweep ── */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "linear-gradient(105deg, transparent 30%, rgba(139,92,246,0.04) 50%, transparent 70%)" }}
+          style={{ background: "linear-gradient(105deg, transparent 30%, rgba(245,158,11,0.04) 50%, transparent 70%)" }}
           animate={{ x: ["-100%", "200%"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear", repeatDelay: 4 }}
         />
@@ -208,17 +208,17 @@ export default function Login() {
           <div className="flex items-center gap-3">
             <motion.div
               className="w-10 h-10 rounded-xl flex items-center justify-center relative overflow-hidden"
-              style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)" }}
+              style={{ background: "rgba(245,158,11,0.2)", border: "1px solid rgba(245,158,11,0.4)" }}
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <motion.div
                 className="absolute inset-0"
-                style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.4), transparent)" }}
+                style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.4), transparent)" }}
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
               />
-              <Languages className="h-5 w-5 text-violet-300 relative z-10" />
+              <Languages className="h-5 w-5 text-amber-300 relative z-10" />
             </motion.div>
             <div>
               <p className="font-bold text-white text-sm tracking-wide">DocBridge</p>
@@ -236,7 +236,7 @@ export default function Login() {
           >
             <motion.div
               className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-7 text-xs font-medium"
-              style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", color: "#a78bfa" }}
+              style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.28)", color: "#fbbf24" }}
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
@@ -292,10 +292,10 @@ export default function Login() {
                 >
                   <motion.div
                     className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden"
-                    style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.22)" }}
-                    whileHover={{ scale: 1.12, borderColor: "rgba(139,92,246,0.5)" }}
+                    style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.22)" }}
+                    whileHover={{ scale: 1.12, borderColor: "rgba(245,158,11,0.5)" }}
                   >
-                    <Icon className="h-4 w-4 text-violet-400 relative z-10" />
+                    <Icon className="h-4 w-4 text-amber-400 relative z-10" />
                   </motion.div>
                   <div>
                     <p className="text-sm font-semibold text-white">{f.label}</p>
@@ -343,19 +343,19 @@ export default function Login() {
       {/* ══════════════════ RIGHT PANEL ══════════════════════════════ */}
       <div
         className="w-full lg:w-[48%] flex items-center justify-center p-6 relative overflow-hidden"
-        style={{ background: "#0c0c22" }}
+        style={{ background: "#0d0a04" }}
       >
         {/* Background glow blobs on right */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <motion.div
             className="absolute top-[-20%] right-[-20%] rounded-full"
-            style={{ width: 500, height: 500, background: "radial-gradient(circle, rgba(109,40,217,0.12) 0%, transparent 70%)" }}
+            style={{ width: 500, height: 500, background: "radial-gradient(circle, rgba(180,83,9,0.12) 0%, transparent 70%)" }}
             animate={{ scale: [1, 1.15, 1], rotate: [0, 20, 0] }}
             transition={{ duration: 12, repeat: Infinity }}
           />
           <motion.div
             className="absolute bottom-[-10%] left-[-10%] rounded-full"
-            style={{ width: 350, height: 350, background: "radial-gradient(circle, rgba(67,56,202,0.10) 0%, transparent 70%)" }}
+            style={{ width: 350, height: 350, background: "radial-gradient(circle, rgba(146,64,14,0.10) 0%, transparent 70%)" }}
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 10, repeat: Infinity, delay: 3 }}
           />
@@ -378,11 +378,11 @@ export default function Login() {
             }}
           >
             {/* Corner glow accent */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.6), transparent)" }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(245,158,11,0.6), transparent)" }} />
 
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-2 mb-7">
-              <Languages className="h-5 w-5 text-violet-400" />
+              <Languages className="h-5 w-5 text-amber-400" />
               <span className="font-bold text-white">DocBridge</span>
             </div>
 
@@ -392,7 +392,7 @@ export default function Login() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.35, type: "spring" }}
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium mb-6"
-              style={{ background: "rgba(139,92,246,0.13)", border: "1px solid rgba(139,92,246,0.28)", color: "#a78bfa" }}
+              style={{ background: "rgba(245,158,11,0.13)", border: "1px solid rgba(245,158,11,0.28)", color: "#fbbf24" }}
             >
               <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 5 }}>
                 <Star className="h-3 w-3 fill-current" />
@@ -441,9 +441,9 @@ export default function Login() {
                     onBlur={() => setFocusedField(null)}
                     className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder:text-white/20 outline-none transition-all duration-300"
                     style={{
-                      background: focusedField === "email" ? "rgba(139,92,246,0.07)" : "rgba(255,255,255,0.04)",
-                      border: focusedField === "email" ? "1px solid rgba(139,92,246,0.65)" : "1px solid rgba(255,255,255,0.08)",
-                      boxShadow: focusedField === "email" ? "0 0 0 3px rgba(139,92,246,0.1), 0 0 20px rgba(139,92,246,0.08)" : "none",
+                      background: focusedField === "email" ? "rgba(245,158,11,0.07)" : "rgba(255,255,255,0.04)",
+                      border: focusedField === "email" ? "1px solid rgba(245,158,11,0.65)" : "1px solid rgba(255,255,255,0.08)",
+                      boxShadow: focusedField === "email" ? "0 0 0 3px rgba(245,158,11,0.1), 0 0 20px rgba(245,158,11,0.08)" : "none",
                     }}
                   />
                   <AnimatePresence>
@@ -451,7 +451,7 @@ export default function Login() {
                       <motion.div
                         initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} exit={{ scaleX: 0 }}
                         className="absolute bottom-0 left-4 right-4 h-px rounded-full"
-                        style={{ background: "linear-gradient(90deg, transparent, #8b5cf6, transparent)", transformOrigin: "center" }}
+                        style={{ background: "linear-gradient(90deg, transparent, #f59e0b, transparent)", transformOrigin: "center" }}
                       />
                     )}
                   </AnimatePresence>
@@ -487,9 +487,9 @@ export default function Login() {
                     onBlur={() => setFocusedField(null)}
                     className="w-full px-4 py-3 pr-12 rounded-xl text-sm text-white placeholder:text-white/20 outline-none transition-all duration-300"
                     style={{
-                      background: focusedField === "password" ? "rgba(139,92,246,0.07)" : "rgba(255,255,255,0.04)",
-                      border: focusedField === "password" ? "1px solid rgba(139,92,246,0.65)" : "1px solid rgba(255,255,255,0.08)",
-                      boxShadow: focusedField === "password" ? "0 0 0 3px rgba(139,92,246,0.1), 0 0 20px rgba(139,92,246,0.08)" : "none",
+                      background: focusedField === "password" ? "rgba(245,158,11,0.07)" : "rgba(255,255,255,0.04)",
+                      border: focusedField === "password" ? "1px solid rgba(245,158,11,0.65)" : "1px solid rgba(255,255,255,0.08)",
+                      boxShadow: focusedField === "password" ? "0 0 0 3px rgba(245,158,11,0.1), 0 0 20px rgba(245,158,11,0.08)" : "none",
                     }}
                   />
                   <AnimatePresence>
@@ -497,7 +497,7 @@ export default function Login() {
                       <motion.div
                         initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} exit={{ scaleX: 0 }}
                         className="absolute bottom-0 left-4 right-12 h-px rounded-full"
-                        style={{ background: "linear-gradient(90deg, transparent, #8b5cf6, transparent)", transformOrigin: "center" }}
+                        style={{ background: "linear-gradient(90deg, transparent, #f59e0b, transparent)", transformOrigin: "center" }}
                       />
                     )}
                   </AnimatePresence>
@@ -537,13 +537,13 @@ export default function Login() {
                 <motion.button
                   type="submit"
                   disabled={isSubmitting}
-                  whileHover={isSubmitting ? {} : { scale: 1.015, boxShadow: "0 8px 32px rgba(139,92,246,0.5)" }}
+                  whileHover={isSubmitting ? {} : { scale: 1.015, boxShadow: "0 8px 32px rgba(245,158,11,0.5)" }}
                   whileTap={isSubmitting ? {} : { scale: 0.975 }}
                   data-testid="button-submit-login"
                   className="w-full py-3.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 mt-1 relative overflow-hidden"
                   style={{
-                    background: isSubmitting ? "rgba(109,40,217,0.45)" : "linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)",
-                    boxShadow: isSubmitting ? "none" : "0 4px 20px rgba(109,40,217,0.4)",
+                    background: isSubmitting ? "rgba(180,83,9,0.45)" : "linear-gradient(135deg, #b45309 0%, #d97706 50%, #f59e0b 100%)",
+                    boxShadow: isSubmitting ? "none" : "0 4px 20px rgba(180,83,9,0.4)",
                   }}
                 >
                   {!isSubmitting && (
@@ -576,9 +576,9 @@ export default function Login() {
               Nuk keni llogari?{" "}
               <Link href="/register" data-testid="link-to-register"
                 className="font-semibold transition-all duration-200 relative"
-                style={{ color: "#a78bfa" }}
+                style={{ color: "#fbbf24" }}
               >
-                <motion.span whileHover={{ textShadow: "0 0 12px rgba(167,139,250,0.6)" }}>
+                <motion.span whileHover={{ textShadow: "0 0 12px rgba(245,158,11,0.6)" }}>
                   Regjistrohu falas
                 </motion.span>
               </Link>
@@ -616,7 +616,7 @@ export default function Login() {
 
           {/* Glow beneath card */}
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-60 h-16 rounded-full pointer-events-none"
-            style={{ background: "rgba(109,40,217,0.2)", filter: "blur(24px)" }} />
+            style={{ background: "rgba(180,83,9,0.2)", filter: "blur(24px)" }} />
         </motion.div>
       </div>
     </div>

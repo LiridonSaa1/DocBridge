@@ -25,7 +25,7 @@ function Particle({ x, y, delay, size, duration }: { x: string; y: string; delay
   return (
     <motion.div
       className="absolute rounded-full pointer-events-none"
-      style={{ left: x, top: y, width: size, height: size, background: "rgba(139,92,246,0.55)" }}
+      style={{ left: x, top: y, width: size, height: size, background: "rgba(245,158,11,0.55)" }}
       initial={{ opacity: 0, scale: 0 }}
       animate={{ opacity: [0, 0.7, 0], scale: [0, 1, 0], y: [0, -50, -100] }}
       transition={{ duration, repeat: Infinity, delay, ease: "easeOut" }}
@@ -94,13 +94,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden" style={{ background: "#080816" }}>
+    <div className="min-h-screen flex flex-col overflow-hidden" style={{ background: "#090807" }}>
 
       {/* ── Background layers ── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <FloatingOrb x="5%"   y="10%" size={500} delay={0} color="rgba(109,40,217,0.15)" blur={120} />
+        <FloatingOrb x="5%"   y="10%" size={500} delay={0} color="rgba(180,83,9,0.15)" blur={120} />
         <FloatingOrb x="60%"  y="55%" size={380} delay={2} color="rgba(16,185,129,0.08)"  blur={100} />
-        <FloatingOrb x="-5%"  y="70%" size={300} delay={1} color="rgba(67,56,202,0.12)"   blur={90}  />
+        <FloatingOrb x="-5%"  y="70%" size={300} delay={1} color="rgba(146,64,14,0.12)"   blur={90}  />
         <FloatingOrb x="80%"  y="5%"  size={250} delay={3} color="rgba(245,158,11,0.07)"  blur={80}  />
         {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
         {/* Grid */}
@@ -109,7 +109,7 @@ export default function Register() {
         {/* Diagonal shimmer */}
         <motion.div
           className="absolute inset-0"
-          style={{ background: "linear-gradient(105deg, transparent 30%, rgba(139,92,246,0.03) 50%, transparent 70%)" }}
+          style={{ background: "linear-gradient(105deg, transparent 30%, rgba(245,158,11,0.03) 50%, transparent 70%)" }}
           animate={{ x: ["-100%", "200%"] }}
           transition={{ duration: 10, repeat: Infinity, ease: "linear", repeatDelay: 5 }}
         />
@@ -127,10 +127,10 @@ export default function Register() {
           <motion.div whileHover={{ x: -3 }} className="flex items-center gap-2 cursor-pointer">
             <motion.div
               className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.35)" }}
+              style={{ background: "rgba(245,158,11,0.18)", border: "1px solid rgba(245,158,11,0.35)" }}
               whileHover={{ scale: 1.1, rotate: -5 }}
             >
-              <Languages className="h-4 w-4 text-violet-400" />
+              <Languages className="h-4 w-4 text-amber-400" />
             </motion.div>
             <span className="font-bold text-white text-sm">DocBridge</span>
           </motion.div>
@@ -140,8 +140,8 @@ export default function Register() {
           <Link href="/login">
             <motion.span
               className="font-semibold cursor-pointer"
-              style={{ color: "#a78bfa" }}
-              whileHover={{ textShadow: "0 0 12px rgba(167,139,250,0.6)" }}
+              style={{ color: "#fbbf24" }}
+              whileHover={{ textShadow: "0 0 12px rgba(245,158,11,0.6)" }}
             >
               Hyni
             </motion.span>
@@ -161,7 +161,7 @@ export default function Register() {
         >
           <motion.div
             className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-6 text-xs font-medium"
-            style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", color: "#a78bfa" }}
+            style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.28)", color: "#fbbf24" }}
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25 }}
@@ -175,7 +175,7 @@ export default function Register() {
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
             Çfarë lloji llogarie
             <br />
-            <span style={{ color: "#a78bfa" }}>dëshironi?</span>
+            <span style={{ color: "#fbbf24" }}>dëshironi?</span>
           </h1>
           <p className="text-base max-w-lg mx-auto" style={{ color: "rgba(255,255,255,0.42)" }}>
             Zgjidhni rolin tuaj në platformën DocBridge. Çdo lloj llogarie ka veçori të posaçme.
@@ -237,7 +237,7 @@ export default function Register() {
                   {role.badge && (
                     <motion.div
                       className="absolute top-4 right-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold"
-                      style={{ background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.35)", color: "#a78bfa" }}
+                      style={{ background: "rgba(245,158,11,0.18)", border: "1px solid rgba(245,158,11,0.35)", color: "#fbbf24" }}
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >

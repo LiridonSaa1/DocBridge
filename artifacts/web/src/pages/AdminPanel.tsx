@@ -120,6 +120,31 @@ function ApprovalModal({ user, type, onClose }: { user: any; type: "notary" | "t
   const [rejectionReason, setRejectionReason] = useState("");
   const [requestInfoMsg, setRequestInfoMsg] = useState("");
   const [activeSection, setActiveSection] = useState<"approve" | "reject" | "info">("approve");
+  const [arbkResult, setArbkResult] = useState<any>(null);
+  const [arbkLoading, setArbkLoading] = useState(false);
+
+  const doArbkVerify = async () => {
+    setArbkLoading(true);
+    setArbkResult(null);
+    try {
+      const res = await fetch("/api/admin/arbk-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessNumber: user.businessNumber || user.licenseNumber,
+          taxNumber: user.taxNumber,
+          fullName: user.fullName,
+          city: user.city,
+        }),
+      });
+      const data = await res.json();
+      setArbkResult(data);
+    } catch {
+      setArbkResult({ verified: false, status: "error", message: "Gabim gjatë lidhjes me ARBK" });
+    } finally {
+      setArbkLoading(false);
+    }
+  };
 
   const doApprove = useMutation({
     mutationFn: async () => {
@@ -192,6 +217,39 @@ function ApprovalModal({ user, type, onClose }: { user: any; type: "notary" | "t
         {user.bio && <div><span className="text-muted-foreground block">Bio</span><p className="text-xs mt-1">{user.bio}</p></div>}
         <div className="flex justify-between"><span className="text-muted-foreground">Regjistruar</span><span>{new Date(user.createdAt).toLocaleDateString("sq-AL")}</span></div>
       </div>
+
+      {/* ARBK Verification */}
+      {type === "notary" && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-semibold flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-blue-600" />
+              Verifikimi ARBK
+            </p>
+            <Button size="sm" variant="outline" className="text-xs h-7 gap-1.5" onClick={doArbkVerify} disabled={arbkLoading}>
+              {arbkLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ShieldCheck className="h-3 w-3" />}
+              {arbkLoading ? "Duke verifikuar..." : "Verifiko me ARBK"}
+            </Button>
+          </div>
+          {arbkResult && (
+            <div className={`rounded-lg p-3 text-xs space-y-1.5 ${arbkResult.verified ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
+              <div className={`font-semibold flex items-center gap-1.5 ${arbkResult.verified ? "text-green-700" : "text-red-700"}`}>
+                {arbkResult.verified ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                {arbkResult.message}
+              </div>
+              {arbkResult.verified && (
+                <div className="space-y-1 mt-2 text-muted-foreground border-t border-green-100 pt-2">
+                  {arbkResult.registrationNumber && <div className="flex justify-between"><span>NIPT:</span><span className="font-mono font-medium">{arbkResult.registrationNumber}</span></div>}
+                  {arbkResult.businessType && <div className="flex justify-between"><span>Lloji:</span><span>{arbkResult.businessType}</span></div>}
+                  {arbkResult.municipality && <div className="flex justify-between"><span>Komuna:</span><span>{arbkResult.municipality}</span></div>}
+                  {arbkResult.taxStatus && <div className="flex justify-between"><span>Statusi:</span><span className="text-green-600 font-medium">{arbkResult.taxStatus}</span></div>}
+                  {arbkResult.source && <div className="mt-1 text-[10px] opacity-50">{arbkResult.source}</div>}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Documents */}
       <div>
