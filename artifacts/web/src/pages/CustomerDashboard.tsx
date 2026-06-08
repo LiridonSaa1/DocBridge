@@ -2,40 +2,16 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, FileText, Clock, CheckCircle2, MessageSquare, Bell, User, Search, Languages, LayoutDashboard, Settings, LogOut, ChevronRight, Loader2 } from "lucide-react";
-
-const requestSchema = z.object({
-  title: z.string().min(3, "Titulli duhet të ketë të paktën 3 karaktere"),
-  sourceLanguage: z.string().min(1, "Zgjidhni gjuhën burimore"),
-  targetLanguage: z.string().min(1, "Zgjidhni gjuhën e synuar"),
-  serviceType: z.string().min(1, "Zgjidhni llojin e shërbimit"),
-  description: z.string().optional(),
-  deadline: z.string().optional(),
-  budget: z.string().optional(),
-});
-
-const LANGUAGES = ["Shqip", "Anglisht", "Italisht", "Gjermanisht", "Frëngjisht", "Arabisht", "Turqisht", "Greqisht", "Serbisht"];
-const SERVICE_TYPES = [
-  { value: "normal", label: "Përkthim Normal" },
-  { value: "urgent", label: "Urgjent (24 orë)" },
-  { value: "certified", label: "I Çertifikuar" },
-  { value: "notarization", label: "Me Noterizim" },
-  { value: "legalization", label: "Me Legalizim" },
-];
+import { useQuery } from "@tanstack/react-query";
+import {
+  Plus, FileText, Clock, CheckCircle2, MessageSquare, Bell,
+  User, Languages, LayoutDashboard, LogOut, ChevronRight, Loader2,
+} from "lucide-react";
 
 const statusColors: Record<string, string> = {
   open: "bg-blue-100 text-blue-700",
@@ -49,12 +25,18 @@ const statusLabels: Record<string, string> = {
   completed: "Përfunduar", cancelled: "Anuluar",
 };
 
+const SERVICE_TYPE_LABELS: Record<string, string> = {
+  standard: "Përkthim Standard",
+  certified: "I Çertifikuar",
+  legal: "Juridik",
+  notarized: "Me Noterizim",
+  normal: "Normal",
+  urgent: "Urgjent",
+};
+
 export default function CustomerDashboard() {
-  const { user, role, signOut } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<"overview" | "requests" | "messages" | "profile">("overview");
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [, setLocation] = useLocation();
 
   const { data: requests = [], isLoading: reqLoading } = useQuery<any[]>({
@@ -85,30 +67,6 @@ export default function CustomerDashboard() {
       return res.json();
     },
     enabled: !!user,
-  });
-
-  const form = useForm<z.infer<typeof requestSchema>>({
-    resolver: zodResolver(requestSchema),
-    defaultValues: { title: "", sourceLanguage: "", targetLanguage: "", serviceType: "", description: "", deadline: "", budget: "" },
-  });
-
-  const createRequest = useMutation({
-    mutationFn: async (values: z.infer<typeof requestSchema>) => {
-      const res = await fetch("/api/translation-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error("Gabim");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["translation-requests"] });
-      setDialogOpen(false);
-      form.reset();
-      toast({ title: "Kërkesa u dërgua!", description: "Profesionistët mund t'ju ofrojnë tani." });
-    },
-    onError: () => toast({ title: "Gabim", description: "Ndodhi një gabim.", variant: "destructive" }),
   });
 
   const unreadNotifs = notifications.filter((n: any) => !n.isRead).length;
@@ -169,59 +127,9 @@ export default function CustomerDashboard() {
                     <h1 className="font-serif text-2xl font-bold">Mirë se vini!</h1>
                     <p className="text-muted-foreground text-sm mt-1">Menaxhoni kërkesat dhe porositë tuaja.</p>
                   </div>
-                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="gap-2"><Plus className="h-4 w-4" /> Kërkesë e re</Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-lg">
-                      <DialogHeader><DialogTitle>Krijo Kërkesë Përkthimi</DialogTitle></DialogHeader>
-                      <Form {...form}>
-                        <form onSubmit={form.handleSubmit(v => createRequest.mutate(v))} className="space-y-4">
-                          <FormField control={form.control} name="title" render={({ field }) => (
-                            <FormItem><FormLabel>Titulli *</FormLabel><FormControl><Input placeholder="Kontratë biznesi — Shqip → Anglisht" {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="sourceLanguage" render={({ field }) => (
-                              <FormItem><FormLabel>Gjuha Burimore *</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="Zgjidhni" /></SelectTrigger></FormControl>
-                                  <SelectContent>{LANGUAGES.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                                </Select><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="targetLanguage" render={({ field }) => (
-                              <FormItem><FormLabel>Gjuha e Synuar *</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="Zgjidhni" /></SelectTrigger></FormControl>
-                                  <SelectContent>{LANGUAGES.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                                </Select><FormMessage /></FormItem>
-                            )} />
-                          </div>
-                          <FormField control={form.control} name="serviceType" render={({ field }) => (
-                            <FormItem><FormLabel>Lloji i Shërbimit *</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Zgjidhni" /></SelectTrigger></FormControl>
-                                <SelectContent>{SERVICE_TYPES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                              </Select><FormMessage /></FormItem>
-                          )} />
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="deadline" render={({ field }) => (
-                              <FormItem><FormLabel>Afati</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="budget" render={({ field }) => (
-                              <FormItem><FormLabel>Buxheti (ALL)</FormLabel><FormControl><Input placeholder="5000" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                          </div>
-                          <FormField control={form.control} name="description" render={({ field }) => (
-                            <FormItem><FormLabel>Shënim</FormLabel><FormControl><Textarea rows={3} placeholder="Detaje shtesë..." {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-                          <Button type="submit" className="w-full" disabled={createRequest.isPending}>
-                            {createRequest.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                            Dërgo Kërkesën
-                          </Button>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
+                  <Link href="/translation-request">
+                    <Button className="gap-2"><Plus className="h-4 w-4" /> Kërkesë e re</Button>
+                  </Link>
                 </div>
 
                 {/* Stats */}
@@ -259,7 +167,9 @@ export default function CustomerDashboard() {
                     <div className="text-center py-8">
                       <Languages className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       <p className="text-muted-foreground text-sm">Ende nuk keni asnjë kërkesë.</p>
-                      <Button size="sm" className="mt-3" onClick={() => setDialogOpen(true)}>Krijoni të parën</Button>
+                      <Link href="/translation-request">
+                        <Button size="sm" className="mt-3">Krijoni të parën</Button>
+                      </Link>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -301,51 +211,20 @@ export default function CustomerDashboard() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <div className="flex items-center justify-between mb-6">
                   <h1 className="font-serif text-2xl font-bold">Kërkesat e Mia</h1>
-                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="gap-2"><Plus className="h-4 w-4" /> Kërkesë e re</Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-lg">
-                      <DialogHeader><DialogTitle>Krijo Kërkesë Përkthimi</DialogTitle></DialogHeader>
-                      <Form {...form}>
-                        <form onSubmit={form.handleSubmit(v => createRequest.mutate(v))} className="space-y-4">
-                          <FormField control={form.control} name="title" render={({ field }) => (
-                            <FormItem><FormLabel>Titulli *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="sourceLanguage" render={({ field }) => (
-                              <FormItem><FormLabel>Gjuha Burimore</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="Zgjidhni" /></SelectTrigger></FormControl>
-                                  <SelectContent>{LANGUAGES.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                                </Select></FormItem>
-                            )} />
-                            <FormField control={form.control} name="targetLanguage" render={({ field }) => (
-                              <FormItem><FormLabel>Gjuha e Synuar</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="Zgjidhni" /></SelectTrigger></FormControl>
-                                  <SelectContent>{LANGUAGES.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                                </Select></FormItem>
-                            )} />
-                          </div>
-                          <FormField control={form.control} name="serviceType" render={({ field }) => (
-                            <FormItem><FormLabel>Lloji</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Zgjidhni" /></SelectTrigger></FormControl>
-                                <SelectContent>{SERVICE_TYPES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                              </Select></FormItem>
-                          )} />
-                          <Button type="submit" className="w-full" disabled={createRequest.isPending}>Dërgo</Button>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
+                  <Link href="/translation-request">
+                    <Button className="gap-2"><Plus className="h-4 w-4" /> Kërkesë e re</Button>
+                  </Link>
                 </div>
-                {requests.length === 0 ? (
+                {reqLoading ? (
+                  <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                ) : requests.length === 0 ? (
                   <div className="text-center py-16 bg-card border rounded-xl">
                     <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                     <p className="font-medium">Asnjë kërkesë ende</p>
                     <p className="text-muted-foreground text-sm">Krijoni kërkesën tuaj të parë.</p>
+                    <Link href="/translation-request">
+                      <Button size="sm" className="mt-4">Krijo Kërkesë</Button>
+                    </Link>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -354,10 +233,22 @@ export default function CustomerDashboard() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
                             <h3 className="font-medium">{req.title}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">{req.sourceLanguage} → {req.targetLanguage} · {SERVICE_TYPES.find(s => s.value === req.serviceType)?.label}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {req.sourceLanguage} → {req.targetLanguage}
+                              {req.serviceType && ` · ${SERVICE_TYPE_LABELS[req.serviceType] || req.serviceType}`}
+                            </p>
+                            {req.country && <p className="text-xs text-muted-foreground mt-0.5">📍 {req.city}, {req.country}</p>}
                             {req.deadline && <p className="text-xs text-muted-foreground mt-1">Afati: {new Date(req.deadline).toLocaleDateString("sq-AL")}</p>}
+                            <p className="text-xs text-muted-foreground mt-1">{new Date(req.createdAt).toLocaleDateString("sq-AL")}</p>
                           </div>
-                          <Badge className={`${statusColors[req.status]} border-0`}>{statusLabels[req.status]}</Badge>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge className={`${statusColors[req.status]} border-0`}>{statusLabels[req.status]}</Badge>
+                            {req.priority && req.priority !== "normal" && (
+                              <Badge variant="outline" className="text-xs border-amber-300 text-amber-700">
+                                {req.priority === "urgent" ? "⚡ Urgjent" : "🔥 Express"}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

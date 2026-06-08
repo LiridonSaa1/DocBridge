@@ -60,17 +60,35 @@ router.get("/translation-requests/:id", async (req, res) => {
 router.post("/translation-requests", async (req, res) => {
   const userId = req.headers["x-user-id"] as string;
   if (!userId) { res.status(401).json({ error: "Not authenticated" }); return; }
-  const { title, description, sourceLanguage, targetLanguage, serviceType, pageCount, wordCount, deadline, budget, notes, documentUrls } = req.body;
+
+  const {
+    title, description, sourceLanguage, targetLanguage, serviceType,
+    pageCount, wordCount, deadline, budget, notes, documentUrls,
+    fullName, phone, documentType, purpose, country, city,
+    deliveryMethod, deliveryStreet, deliveryPostalCode, priority,
+  } = req.body;
+
   if (!title || !sourceLanguage || !targetLanguage || !serviceType) {
     res.status(400).json({ error: "title, sourceLanguage, targetLanguage, serviceType are required" }); return;
   }
+
   const [request] = await db.insert(translationRequestsTable).values({
     customerId: userId,
+    fullName: fullName ?? null,
+    phone: phone ?? null,
     title,
     description: description ?? null,
+    documentType: documentType ?? null,
     sourceLanguage,
     targetLanguage,
+    purpose: purpose ?? null,
     serviceType,
+    priority: priority ?? "normal",
+    country: country ?? null,
+    city: city ?? null,
+    deliveryMethod: deliveryMethod ?? null,
+    deliveryStreet: deliveryStreet ?? null,
+    deliveryPostalCode: deliveryPostalCode ?? null,
     pageCount: pageCount ?? null,
     wordCount: wordCount ?? null,
     deadline: deadline ? new Date(deadline) : null,
@@ -79,7 +97,9 @@ router.post("/translation-requests", async (req, res) => {
     documentUrls: documentUrls ?? [],
     status: "open",
   }).returning();
+
   await logAction("translation_request_created", { userId, entityType: "translation_request", entityId: String(request.id), req });
+
   res.status(201).json({
     ...request,
     createdAt: request.createdAt.toISOString(),

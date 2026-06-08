@@ -20,6 +20,7 @@ import TranslatorDetail from "@/pages/TranslatorDetail";
 import Courses from "@/pages/Courses";
 import CourseDetail from "@/pages/CourseDetail";
 import AdminPanel from "@/pages/AdminPanel";
+import TranslationRequestForm from "@/pages/TranslationRequestForm";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +48,7 @@ function Router() {
       <Route path="/courses/:id" component={CourseDetail} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/admin/:tab" component={AdminPanel} />
+      <Route path="/translation-request" component={TranslationRequestForm} />
       <Route component={NotFound} />
     </Switch>
   );

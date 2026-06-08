@@ -1,0 +1,254 @@
+Create a professional form where users can:
+
+Upload documents for translation
+Select language & services
+Enter destination details
+Choose delivery method
+Track request type (normal / urgent / certified)
+Automatically handle country → city dropdown logic
+Submit request to Supabase database
+📄 FORM STRUCTURE
+1. BASIC INFORMATION
+
+Fields:
+
+Full Name (auto from profile)
+Email (auto filled, readonly)
+Phone Number (editable)
+2. TRANSLATION DETAILS
+Document Type
+
+Dropdown:
+
+Personal Document
+Legal Document
+Business Document
+Academic Document
+Medical Document
+Other
+Source Language
+
+Dropdown:
+
+Albanian
+English
+German
+Turkish
+French
+Italian
+Arabic
+Serbian
+Other
+Target Language
+
+Same dropdown as above
+
+Translation Purpose
+
+Textarea:
+
+“Explain what this translation is for (visa, court, business, education, etc.)”
+📁 3. DOCUMENT UPLOAD (VERY IMPORTANT)
+
+Allow multiple file upload:
+
+PDF
+JPG
+PNG
+DOCX
+
+Features:
+
+Drag & drop upload
+Progress bar
+File preview
+Remove file option
+
+Store files in:
+
+Supabase Storage → bucket: translation-documents
+
+Rules:
+
+PRIVATE BUCKET
+Use signed URLs only
+Max 10 files per request
+Max size 10MB per file
+🌍 4. LOCATION SYSTEM (IMPORTANT LOGIC)
+Country Dropdown
+
+User selects country:
+
+Examples:
+
+Kosovo
+Albania
+Germany
+Switzerland
+Austria
+Italy
+United Kingdom
+USA
+⚡ DYNAMIC CITY DROPDOWN (IMPORTANT REQUIREMENT)
+
+When user selects a country:
+
+IF country = Kosovo
+
+Automatically load ONLY Kosovo cities:
+
+Pristina
+Prizren
+Peja
+Mitrovica
+Ferizaj
+Gjakova
+Gjilan
+Podujeva
+Vushtrri
+Istog
+Rahovec
+Suhareka
+
+👉 No other cities allowed.
+
+IF country = Albania
+
+Show only Albanian cities:
+
+Tirana
+Durrës
+Shkodër
+Vlorë
+Elbasan
+Fier
+Berat
+IF other country selected
+
+Load cities dynamically from a static JSON mapping:
+
+citiesByCountry.ts
+
+📦 5. DELIVERY DETAILS
+
+Fields:
+
+Delivery Method
+
+Radio buttons:
+
+Digital Download (email)
+Physical Delivery (post)
+Both
+Delivery Address (ONLY if physical selected)
+
+Fields:
+
+Street Address
+Postal Code
+City (linked to country dropdown)
+Country (auto filled)
+Additional Notes
+⚡ 6. SERVICE TYPE
+
+Select:
+
+Standard Translation
+Certified Translation
+Legal Translation
+Notarized Translation (future integration)
+⏱ 7. PRIORITY
+
+Radio:
+
+Normal (3–5 days)
+Urgent (24–48h)
+Express (same day) → premium pricing
+💬 8. EXTRA NOTES
+
+Textarea:
+
+“Add instructions for translator”
+💰 9. PRICE CALCULATION (UI ONLY FOR NOW)
+
+Show estimated price dynamically:
+
+Rules (frontend logic placeholder):
+
+Standard: €5/page
+Certified: €10/page
+Legal: €15/page
+Urgent +50%
+Express +100%
+🔐 10. VALIDATION RULES
+
+Use Zod:
+
+required fields validation
+file type validation
+max file size check
+prevent empty submission
+🗄️ SUPABASE INTEGRATION
+Table: translation_requests
+
+Fields:
+
+id
+user_id
+full_name
+email
+phone
+source_language
+target_language
+document_type
+purpose
+country
+city
+delivery_method
+address
+service_type
+priority
+notes
+files (array of URLs)
+status (pending, assigned, in_progress, completed)
+created_at
+Storage
+
+Bucket:
+
+translation-documents (PRIVATE)
+
+🔁 REAL-TIME FEATURES
+Show upload progress
+Show request status updates
+Notify user when translator is assigned
+Notification system ready for Supabase Realtime
+🎨 UI/UX REQUIREMENTS
+Modern SaaS UI
+Multi-step form (wizard style optional)
+Progress indicator (Step 1 → Step 2 → Step 3)
+Mobile responsive
+Smooth animations
+Error messages inline
+Success confirmation page
+🧠 SMART FEATURES
+Auto-detect country → city dropdown
+Auto-fill user profile data
+Save draft (localStorage)
+Prevent duplicate submission
+File preview before upload
+🔒 SECURITY
+Supabase Auth required
+RLS policies:
+users can only see their own requests
+Signed URLs for files only
+Rate limiting on submissions
+🚀 IMPORTANT
+
+This page must be:
+
+production ready
+scalable
+clean architecture
+ready for future AI translation integration
+ready for payment integration (Stripe later)
