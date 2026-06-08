@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -6,13 +6,136 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, LogOut, LayoutDashboard, Shield, FileText, Languages } from "lucide-react";
+import { Menu, X, ChevronDown, LogOut, LayoutDashboard, Shield, FileText, Languages, Bell, CheckCircle } from "lucide-react";
+import { useAdminEvents, type AdminEvent } from "@/hooks/useAdminEvents";
 
 const navLinks = [
   { href: "/notaries", label: "Noterë", icon: FileText },
   { href: "/translators", label: "Pérkthyes", icon: Languages },
 ];
 
+// ─── Admin Notification Bell ─────────────────────────────────────────────────
+function AdminBell() {
+  const { events, unreadCount, clearUnread } = useAdminEvents();
+  const [open, setOpen] = useState(false);
+  const prevCountRef = useRef(0);
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    if (unreadCount <= prevCountRef.current) return;
+    setPulse(true);
+    const t = setTimeout(() => setPulse(false), 1200);
+    prevCountRef.current = unreadCount;
+    return () => clearTimeout(t);
+  }, [unreadCount]);
+
+  const handleOpen = (v: boolean) => {
+    setOpen(v);
+    if (v) clearUnread();
+  };
+
+  const typeLabel = (e: AdminEvent) =>
+    e.entityType === "notary" ? "Noter i Ri" : "Pérkthyes i Ri";
+
+  const timeAgo = (iso: string) => {
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    if (diff < 60) return "Tani";
+    if (diff < 3600) return `${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} orë`;
+    return `${Math.floor(diff / 86400)} d`;
+  };
+
+  return (
+    <DropdownMenu open={open} onOpenChange={handleOpen}>
+      <DropdownMenuTrigger asChild>
+        <motion.button
+          className="relative p-2 rounded-xl hover:bg-muted transition-colors"
+          animate={pulse ? { scale: [1, 1.2, 1] } : {}}
+          transition={{ duration: 0.4 }}
+          aria-label="Notifikime Admin"
+        >
+          <Bell className="h-4.5 w-5 text-muted-foreground" />
+          <AnimatePresence>
+            {unreadCount > 0 && (
+              <motion.span
+                key="badge"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center px-1 shadow-sm"
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-80 rounded-xl shadow-xl border-border/80 p-0 overflow-hidden">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/30">
+          <div>
+            <p className="text-sm font-semibold">Aprovime në Pritje</p>
+            <p className="text-xs text-muted-foreground">Notifikime real-time</p>
+          </div>
+          <Link href="/admin">
+            <span className="text-xs text-primary font-medium hover:underline cursor-pointer">Shiko të gjitha</span>
+          </Link>
+        </div>
+
+        {/* Event list */}
+        <div className="max-h-72 overflow-y-auto">
+          {events.length === 0 ? (
+            <div className="py-8 text-center">
+              <CheckCircle className="h-7 w-7 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Asnjë aprovim i ri</p>
+            </div>
+          ) : (
+            <AnimatePresence initial={false}>
+              {events.map((ev, i) => (
+                <motion.div
+                  key={ev.id}
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                >
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-muted/60 rounded-none border-b border-border/40 last:border-0">
+                      <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${ev.entityType === "notary" ? "bg-primary/10" : "bg-emerald-100"}`}>
+                        <span className={`text-sm font-bold ${ev.entityType === "notary" ? "text-primary" : "text-emerald-700"}`}>
+                          {ev.fullName.charAt(0)}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-semibold truncate">{ev.fullName}</p>
+                          <span className="text-[10px] text-muted-foreground flex-shrink-0">{timeAgo(ev.createdAt)}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{typeLabel(ev)}{ev.city ? ` · ${ev.city}` : ""}</p>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-border px-4 py-2.5 bg-muted/20">
+          <Link href="/admin">
+            <span className="text-xs text-primary font-medium hover:underline cursor-pointer flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              Hap Panelin Admin
+            </span>
+          </Link>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
 export default function Header() {
   const [location] = useLocation();
   const { user, role, signOut } = useAuth();
@@ -70,8 +193,10 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Auth */}
+          {/* Auth + Admin Bell */}
           <div className="hidden md:flex items-center gap-2">
+            {user && role === "admin" && <AdminBell />}
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

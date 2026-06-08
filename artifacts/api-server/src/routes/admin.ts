@@ -3,6 +3,7 @@ import { db, usersTable, notariesTable, translatorsTable, coursesTable, adsTable
 import { eq, count, gte, desc, and, or, ilike } from "drizzle-orm";
 import { logAction } from "../services/audit";
 import { createNotification } from "../services/notifications";
+import { registerAdminClient, removeAdminClient } from "../services/adminEvents";
 
 const router = Router();
 
@@ -206,6 +207,30 @@ router.get("/admin/translation-requests", async (req, res) => {
     updatedAt: r.updatedAt.toISOString(),
     deadline: r.deadline?.toISOString() ?? null,
   })));
+});
+
+// SSE — Real-time admin event stream
+router.get("/admin/events", (req, res) => {
+  res.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no",
+  });
+  res.flushHeaders();
+  res.write(":connected\n\n");
+
+  registerAdminClient(res);
+
+  const heartbeat = setInterval(() => {
+    try { res.write(":heartbeat\n\n"); }
+    catch { clearInterval(heartbeat); }
+  }, 25000);
+
+  req.on("close", () => {
+    clearInterval(heartbeat);
+    removeAdminClient(res);
+  });
 });
 
 // ARBK — Agjencia e Regjistrimit të Bizneseve të Kosovës

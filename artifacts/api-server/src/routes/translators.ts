@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, translatorsTable, usersTable } from "@workspace/db";
 import { eq, ilike, and } from "drizzle-orm";
 import { logAction } from "../services/audit";
+import { broadcastAdminEvent } from "../services/adminEvents";
 
 const router = Router();
 
@@ -64,6 +65,15 @@ router.post("/translators", async (req, res) => {
     status: "pending", verificationStatus: "pending_email",
   }).onConflictDoUpdate({ target: usersTable.id, set: { role: "translator", status: "pending" } });
   await logAction("translator_registered", { userId, entityType: "translator", entityId: String(t.id), req });
+  broadcastAdminEvent({
+    id: `translator-${t.id}-${Date.now()}`,
+    type: "pending_approval",
+    entityType: "translator",
+    fullName: t.fullName,
+    city: t.city,
+    email: t.email,
+    createdAt: t.createdAt.toISOString(),
+  });
   res.status(201).json({ ...t, createdAt: t.createdAt.toISOString(), updatedAt: t.updatedAt.toISOString() });
 });
 
