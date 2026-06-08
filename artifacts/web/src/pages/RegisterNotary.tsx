@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, User, Building2, FileText, ShieldCheck, ChevronRight, ChevronLeft, Upload, CheckCircle2, Languages } from "lucide-react";
+import { citiesByCountry } from "@/data/citiesByCountry";
 
 const ACCENT = "#f59e0b";
 const ACCENT_BG = "rgba(245,158,11,0.1)";
@@ -47,7 +48,8 @@ const STEPS = [
   { title: "Dokumentet Profesionale", icon: FileText },
   { title: "Verifikimi i Identitetit", icon: ShieldCheck },
 ];
-const MUNICIPALITIES = ["Tiranë", "Durrës", "Vlorë", "Shkodër", "Elbasan", "Korçë", "Fier", "Berat", "Lushnjë", "Kavajë", "Gjirokastër", "Pogradec", "Lezhë", "Kukës", "Tropojë", "Peshkopi", "Tjetër"];
+const KOSOVO_MUNICIPALITIES = citiesByCountry["Kosovo"] ?? [];
+const ALBANIAN_MUNICIPALITIES = citiesByCountry["Shqipëri"] ?? [];
 
 export default function RegisterNotary() {
   const [, setLocation] = useLocation();
@@ -199,7 +201,7 @@ export default function RegisterNotary() {
                       <div><DarkLabel>Numri Fiskal *</DarkLabel><FormField control={form.control} name="taxNumber" render={({ field }) => (<FormItem><FormControl><DarkInput {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField control={form.control} name="municipality" render={({ field }) => (<FormItem><DarkLabel>Bashkia *</DarkLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni" /></SelectTrigger><SelectContent>{MUNICIPALITIES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
+                      <FormField control={form.control} name="municipality" render={({ field }) => (<FormItem><DarkLabel>Bashkia *</DarkLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="dark-select"><SelectValue placeholder="Zgjidhni" /></SelectTrigger><SelectContent><div className="px-2 py-1 text-xs font-semibold text-muted-foreground">🇽🇰 Kosovë</div>{KOSOVO_MUNICIPALITIES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}<div className="px-2 py-1 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">🇦🇱 Shqipëri</div>{ALBANIAN_MUNICIPALITIES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} />
                       <div><DarkLabel>Orari i Punës *</DarkLabel><FormField control={form.control} name="workingHours" render={({ field }) => (<FormItem><FormControl><DarkInput placeholder="E Hënë-E Premte 08:00-17:00" {...field} /></FormControl><FormMessage className="text-red-400 text-xs mt-1" /></FormItem>)} /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">

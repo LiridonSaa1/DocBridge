@@ -10,8 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Phone, Building2, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { citiesByCountry } from "@/data/citiesByCountry";
 
-const ALBANIAN_CITIES = ["Tiranë", "Durrës", "Vlorë", "Shkodër", "Elbasan", "Fier", "Korçë", "Berat", "Lushnjë", "Kavajë"];
+const KOSOVO_CITIES = citiesByCountry["Kosovo"] ?? [];
+const ALBANIAN_CITIES = citiesByCountry["Shqipëri"] ?? [];
+const ALL_CITIES = [...KOSOVO_CITIES, ...ALBANIAN_CITIES];
 
 export default function Notaries() {
   const [search, setSearch] = useState("");
@@ -59,7 +62,12 @@ export default function Notaries() {
                 data-testid="select-city"
               >
                 <option value="">Të gjitha qytetet</option>
-                {ALBANIAN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                <optgroup label="🇽🇰 Kosovë">
+                  {KOSOVO_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>
+                <optgroup label="🇦🇱 Shqipëri">
+                  {ALBANIAN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>
               </select>
               {(search || city) && (
                 <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setCity(""); }} data-testid="button-clear-filters">
