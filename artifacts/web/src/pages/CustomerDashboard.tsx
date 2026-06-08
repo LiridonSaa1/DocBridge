@@ -229,28 +229,29 @@ export default function CustomerDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {requests.map((req: any) => (
-                      <div key={req.id} className="bg-card border rounded-xl p-4 hover:shadow-sm transition-shadow">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <h3 className="font-medium">{req.title}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {req.sourceLanguage} → {req.targetLanguage}
-                              {req.serviceType && ` · ${SERVICE_TYPE_LABELS[req.serviceType] || req.serviceType}`}
-                            </p>
-                            {req.country && <p className="text-xs text-muted-foreground mt-0.5">📍 {req.city}, {req.country}</p>}
-                            {req.deadline && <p className="text-xs text-muted-foreground mt-1">Afati: {new Date(req.deadline).toLocaleDateString("sq-AL")}</p>}
-                            <p className="text-xs text-muted-foreground mt-1">{new Date(req.createdAt).toLocaleDateString("sq-AL")}</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <Badge className={`${statusColors[req.status]} border-0`}>{statusLabels[req.status]}</Badge>
-                            {req.priority && req.priority !== "normal" && (
-                              <Badge variant="outline" className="text-xs border-amber-300 text-amber-700">
-                                {req.priority === "urgent" ? "⚡ Urgjent" : "🔥 Express"}
-                              </Badge>
-                            )}
+                      <Link key={req.id} href={`/requests/${req.id}`}>
+                        <div className="bg-card border rounded-xl p-4 hover:shadow-sm hover:border-primary/30 transition-all cursor-pointer">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <h3 className="font-medium">{req.title}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {req.sourceLanguage} → {req.targetLanguage}
+                                {req.serviceType && ` · ${SERVICE_TYPE_LABELS[req.serviceType] || req.serviceType}`}
+                              </p>
+                              {req.country && <p className="text-xs text-muted-foreground mt-0.5">📍 {req.city}, {req.country}</p>}
+                              <p className="text-xs text-muted-foreground mt-1">{new Date(req.createdAt).toLocaleDateString("sq-AL")}</p>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge className={`${statusColors[req.status]} border-0`}>{statusLabels[req.status]}</Badge>
+                              {req.priority && req.priority !== "normal" && (
+                                <Badge variant="outline" className="text-xs border-amber-300 text-amber-700">
+                                  {req.priority === "urgent" ? "⚡ Urgjent" : "🔥 Express"}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}
