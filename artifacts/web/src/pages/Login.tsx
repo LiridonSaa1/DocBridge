@@ -230,7 +230,7 @@ export default function Login() {
               <Languages className="h-5 w-5 text-violet-300 relative z-10" />
             </motion.div>
             <div>
-              <p className="font-bold text-white text-sm tracking-wide">ShërbimePro</p>
+              <p className="font-bold text-white text-sm tracking-wide">DocBridge</p>
               <p className="text-[10px] tracking-[0.2em] uppercase" style={{ color: "rgba(255,255,255,0.35)" }}>Platforma Profesionale</p>
             </div>
           </div>
@@ -392,7 +392,7 @@ export default function Login() {
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-2 mb-7">
               <Languages className="h-5 w-5 text-violet-400" />
-              <span className="font-bold text-white">ShërbimePro</span>
+              <span className="font-bold text-white">DocBridge</span>
             </div>
 
             {/* Welcome badge */}

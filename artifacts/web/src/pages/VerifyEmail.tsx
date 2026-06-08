@@ -47,7 +47,7 @@ export default function VerifyEmail() {
         <div className="bg-muted/50 rounded-2xl p-6 mb-6 text-left space-y-3">
           {[
             "Hapni emailin tuaj",
-            "Gjeni emailin nga ShërbimePro",
+            "Gjeni emailin nga DocBridge",
             "Klikoni butonin 'Verifiko Email-in'",
             "Kthehuni këtu dhe hyni në llogari",
           ].map((step, i) => (

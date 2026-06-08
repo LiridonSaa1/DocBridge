@@ -1,4 +1,4 @@
-# ShërbimePro
+# DocBridge
 
 Platforma profesionale shqiptare për gjetjen e noterëve, përkthyesve dhe kurseve — me panel admini, karusel reklamash dhe sistem autentikimi me role.
 

@@ -367,7 +367,7 @@ export default function AdminPanel() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="font-serif text-3xl font-bold">Paneli i Administratorit</h1>
-              <p className="text-muted-foreground text-sm mt-1">Menaxhoni platformën ShërbimePro</p>
+              <p className="text-muted-foreground text-sm mt-1">Menaxhoni platformën DocBridge</p>
             </div>
             {totalPending > 0 && (
               <Badge className="bg-amber-100 text-amber-700 border-amber-200 gap-1.5 px-3 py-1.5">

@@ -51,7 +51,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
-          <span>&copy; {new Date().getFullYear()} ShërbimePro. Të gjitha të drejtat e rezervuara.</span>
+          <span>&copy; {new Date().getFullYear()} DocBridge. Të gjitha të drejtat e rezervuara.</span>
           <span className="flex items-center gap-1.5">
             <Sparkles className="h-3 w-3 text-primary" />
             Ndërtuar me kujdes për profesionistët shqiptarë
